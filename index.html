@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crow Server CRUD Demo</title>
+    <!-- Load Tailwind CSS from CDN for easy styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for a dark theme and better font */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1f2937; /* Darker gray background */
+            color: #f3f4f6; /* Light text color */
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <!-- Container Card for Navigation -->
+    <div class="w-full max-w-lg p-8 bg-gray-800 rounded-xl shadow-2xl border border-gray-700">
+        
+        <h1 class="text-4xl font-extrabold text-white mb-3 text-center">
+            Crow Server Demo
+        </h1>
+        <p class="text-center text-gray-400 mb-8">
+            Access the client pages to interact with the C++ server on port 18080.
+        </p>
+
+        <!-- Navigation Links -->
+        <div class="space-y-4">
+            
+            <!-- Link to POST/Create Form -->
+            <a href="./form.html" class="block w-full text-center py-3 px-4 rounded-lg shadow-lg text-lg font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 focus:ring-offset-gray-800 transition duration-150 ease-in-out transform hover:scale-[1.01] active:scale-[0.99]">
+                &#128196; 1. Go to POST /create Form
+            </a>
+
+            <!-- Link to GET/Read Page -->
+            <a href="./readform.html" class="block w-full text-center py-3 px-4 rounded-lg shadow-lg text-lg font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 focus:ring-offset-gray-800 transition duration-150 ease-in-out transform hover:scale-[1.01] active:scale-[0.99]">
+                &#128220; 2. Go to FETCH /read Data
+            </a>
+        </div>
+
+        <!-- Privacy Note -->
+        <p class="text-xs text-center text-gray-500 mt-8 pt-4 border-t border-gray-700">
+            **Privacy Note:** Serving this `index.html` prevents your web server from listing the directory contents, protecting your source files like `main.cpp` from public view.
+        </p>
+    </div>
+
+</body>
+</html>

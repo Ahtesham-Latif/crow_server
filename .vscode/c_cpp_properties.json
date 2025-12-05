@@ -1,0 +1,16 @@
+{
+    "configurations": [
+        {
+            "name": "MinGW-w64 GCC 15.2.0",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            // Use the path for your new, working compiler
+            "compilerPath": "C:/msys64/mingw64/bin/g++.exe",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "windows-gcc-x64"
+        }
+    ],
+    "version": 4
+}
