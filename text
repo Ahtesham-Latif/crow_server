@@ -1,0 +1,34 @@
+crow_backend/
+│
+├── CMakeLists.txt
+├── README.md
+│
+├── build/                 # ❌ disposable
+│
+├── db/                    # ✅ persistent data
+│   └── app.db
+│
+├── config/
+│   └── config.h           # db path, ports, webhook urls
+│
+├── models/                # M — database logic
+│   ├── doctor_model.h
+│   ├── doctor_model.cpp
+│   ├── appointment_model.h
+│   └── appointment_model.cpp
+│
+├── controllers/           # C — business logic
+│   ├── doctor_controller.h
+│   ├── doctor_controller.cpp
+│   ├── appointment_controller.h
+│   └── appointment_controller.cpp
+│
+├── routes/                # route bindings only
+│   ├── doctor_routes.h
+│   ├── doctor_routes.cpp
+│   └── appointment_routes.h
+│
+├── services/              # external services
+│   └── webhook_service.cpp
+│
+└── main.cpp               # ONLY app bootstrap

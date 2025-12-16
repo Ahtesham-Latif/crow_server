@@ -1,0 +1,17 @@
+# Build artifacts
+/build/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Databases
+*.db
+
+# Environment variables
+.env
+
+# OS / editor junk
+.vscode/
+*.log
+*.exe
