@@ -1,3 +1,0 @@
-C:/Users/Admin/crow_backend/build/CMakeFiles/server.dir
-C:/Users/Admin/crow_backend/build/CMakeFiles/edit_cache.dir
-C:/Users/Admin/crow_backend/build/CMakeFiles/rebuild_cache.dir
