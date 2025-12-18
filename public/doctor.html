@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Doctors</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        h1 { color: #333; }
+        select { font-size: 16px; padding: 5px; margin-top: 10px; }
+        button { padding: 5px 10px; margin-left: 10px; }
+        .doctor-card { border: 1px solid #ccc; padding: 10px; margin-top: 10px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Select a Category to See Doctors</h1>
+
+    <form id="categoryForm">
+        <select id="categorySelect">
+            <option value="">-- Loading categories --</option>
+        </select>
+        <button type="submit">Submit</button>
+    </form>
+
+    <div id="doctorsContainer"></div>
+
+    <script>
+        async function fetchCategories() {
+            try {
+                const res = await fetch("/get_categories");
+                if (!res.ok) throw new Error("Failed to fetch categories");
+                const data = await res.json();
+
+                const select = document.getElementById("categorySelect");
+                select.innerHTML = "<option value=''>-- Select a category --</option>";
+
+                data.forEach(cat => {
+                    const option = document.createElement("option");
+                    option.value = cat.category_id;
+                    option.textContent = cat.category_name;
+                    select.appendChild(option);
+                });
+
+            } catch (err) {
+                document.getElementById("categorySelect").innerHTML = "<option value=''>Error loading categories</option>";
+                console.error(err);
+            }
+        }
+
+        async function fetchDoctors(categoryId) {
+            try {
+                const res = await fetch(`/get_doctors?category_id=${categoryId}`);
+                if (!res.ok) throw new Error("Failed to fetch doctors");
+                const doctors = await res.json();
+
+                const container = document.getElementById("doctorsContainer");
+                container.innerHTML = ""; // Clear previous results
+
+                if (doctors.length === 0) {
+                    container.textContent = "No doctors found for this category.";
+                    return;
+                }
+
+                doctors.forEach(doc => {
+                    const div = document.createElement("div");
+                    div.className = "doctor-card";
+                    div.innerHTML = `
+                        <strong>${doc.doctor_name}</strong><br>
+                        Experience: ${doc.experience_years} yrs<br>
+                        Degree: ${doc.qualifications}<br>
+                        Rating: ${doc.ratings}
+                    `;
+                    container.appendChild(div);
+                });
+
+            } catch (err) {
+                const container = document.getElementById("doctorsContainer");
+                container.textContent = "Error loading doctors.";
+                console.error(err);
+            }
+        }
+
+        document.getElementById("categoryForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+            const select = document.getElementById("categorySelect");
+            const categoryId = select.value;
+            if (!categoryId) return;
+
+            fetchDoctors(categoryId);
+        });
+
+        fetchCategories();
+    </script>
+</body>
+</html>

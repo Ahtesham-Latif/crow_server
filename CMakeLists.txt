@@ -1,25 +1,37 @@
-cmake_minimum_required(VERSION 3.10)
-project(crow_server)
+cmake_minimum_required(VERSION 3.15)
+project(crow_server LANGUAGES CXX)
 
+# ---- C++17 (MANDATORY for Crow) ----
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Force Windows 10 compatibility for cpp-httplib
+# ---- Windows compatibility ----
 add_definitions(-D_WIN32_WINNT=0x0A00)
 
-# Force console subsystem for MinGW
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-subsystem,console")
+# ---- MinGW console subsystem ----
+if (MINGW)
+    set(CMAKE_EXE_LINKER_FLAGS
+        "${CMAKE_EXE_LINKER_FLAGS} -Wl,-subsystem,console"
+    )
+endif()
 
-# Crow include
-include_directories(${CMAKE_SOURCE_DIR}/Crow/include)
+# ---- Include directories ----
+include_directories(
+    ${CMAKE_SOURCE_DIR}/Crow/include
+    ${CMAKE_SOURCE_DIR}/httplib
+    ${CMAKE_SOURCE_DIR}/controllers
+    ${CMAKE_SOURCE_DIR}/models
+)
 
-# Add cpp-httplib header (manual download)
-include_directories(${CMAKE_SOURCE_DIR}/httplib)
+# ---- Executable (ALL .cpp FILES MUST BE LISTED) ----
+add_executable(server
+    main.cpp
+    controllers/category_controller.cpp
+    controllers/doctor_controller.cpp
+)
 
-# Add executable
-add_executable(server main.cpp)
-
-# Link libraries
+# ---- Libraries ----
 target_link_libraries(server
     sqlite3
     ws2_32
@@ -27,5 +39,6 @@ target_link_libraries(server
     advapi32
 )
 
+# ---- Info ----
 message(STATUS "Crow + SQLite3 + cpp-httplib configured successfully!")
-message(STATUS "Don't forget to update N8N_WEBHOOK_PATH in main.cpp!")
+message(STATUS "C++ Standard: ${CMAKE_CXX_STANDARD}")

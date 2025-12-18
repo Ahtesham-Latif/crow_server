@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Categories</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        h1 { color: #333; }
+        select { font-size: 16px; padding: 5px; margin-top: 10px; }
+        button { padding: 5px 10px; margin-left: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Select a Category</h1>
+    <form id="categoryForm">
+        <select id="categorySelect">
+            <option value="">-- Loading categories --</option>
+        </select>
+        <button type="submit">Submit</button>
+    </form>
+    <p id="selectedCategory"></p>
+
+    <script>
+        async function fetchCategories() {
+            try {
+                const res = await fetch("/get_categories");
+                if (!res.ok) throw new Error("Failed to fetch categories");
+                const data = await res.json();
+
+                const select = document.getElementById("categorySelect");
+                select.innerHTML = "<option value=''>-- Select a category --</option>";
+
+                data.forEach(cat => {
+                    const option = document.createElement("option");
+                    option.value = cat.category_id;
+                    option.textContent = cat.category_name;
+                    select.appendChild(option);
+                });
+
+            } catch (err) {
+                document.getElementById("categorySelect").innerHTML = "<option value=''>Error loading categories</option>";
+                console.error(err);
+            }
+        }
+
+        document.getElementById("categoryForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+            const select = document.getElementById("categorySelect");
+            const selected = select.options[select.selectedIndex].text;
+            document.getElementById("selectedCategory").textContent = "You selected: " + selected;
+        });
+
+        fetchCategories();
+    </script>
+</body>
+</html>
