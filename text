@@ -32,3 +32,25 @@ crow_backend/
 │   └── webhook_service.cpp
 │
 └── main.cpp               # ONLY app bootstrap
+
+
+
+
+// updated structure with comments
+crow_backend/
+│
+├── CMakeLists.txt
+├── README.md
+├── build/                  # compiled binaries
+├── db/                     # SQLite DB
+│   └── app.db
+├── config/
+│   └── config.h            # DB path, ports
+├── models/                 # DB logic
+├── controllers/            # HTTP + business logic
+├── routes/                 # URL → controller
+├── services/               # external APIs / webhooks
+├── views/                  # Frontend
+│   └── html/               # HTML files
+├── public/                 # JS/CSS/images
+└── main.cpp                # app bootstrap

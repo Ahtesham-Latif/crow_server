@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Category Manager</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        select, input { margin: 10px 0; padding: 5px; width: 250px; }
+        button { padding: 5px 10px; cursor: pointer; }
+        #result { margin-top: 15px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h2>Category Manager</h2>
+
+    <!-- Dropdown for categories -->
+    <label for="categories">Select Category:</label><br>
+    <select id="categories">
+        <option value="">--Loading categories--</option>
+    </select>
+
+    <hr>
+
+    <!-- Add new category -->
+    <label for="newCategory">Add New Category:</label><br>
+    <input type="text" id="newCategory" placeholder="Category name">
+    <button onclick="addCategory()">Add Category</button>
+
+    <div id="result"></div>
+
+    <script>
+        const resultDiv = document.getElementById("result");
+        const categoriesSelect = document.getElementById("categories");
+
+        // Fetch categories on page load
+        async function loadCategories() {
+            try {
+                const res = await fetch("/get_categories");
+                const data = await res.json();
+
+                // Clear current options
+                categoriesSelect.innerHTML = "";
+                if (data.length === 0) {
+                    categoriesSelect.innerHTML = "<option value=''>No categories found</option>";
+                } else {
+                    data.forEach(cat => {
+                        const opt = document.createElement("option");
+                        opt.value = cat.category_id;
+                        opt.textContent = cat.category_name;
+                        categoriesSelect.appendChild(opt);
+                    });
+                }
+
+            } catch (err) {
+                resultDiv.textContent = "❌ Error loading categories";
+                console.error(err);
+            }
+        }
+
+        // Add new category
+        async function addCategory() {
+            const name = document.getElementById("newCategory").value.trim();
+            if (!name) {
+                resultDiv.textContent = "❌ Enter a category name";
+                return;
+            }
+
+            try {
+                const res = await fetch("/add_category", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ category_name: name })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    resultDiv.textContent = "✅ Category added!";
+                    document.getElementById("newCategory").value = "";
+                    loadCategories(); // refresh dropdown
+                } else {
+                    resultDiv.textContent = "❌ Failed to add category";
+                }
+
+            } catch (err) {
+                resultDiv.textContent = "❌ Error adding category";
+                console.error(err);
+            }
+        }
+
+        // Load categories on page load
+        window.onload = loadCategories;
+    </script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Form</title>
+</head>
+<body>
+
+<h2>Patient Form</h2>
+
+<input id="name" placeholder="Name"><br><br>
+<input id="email" placeholder="Email"><br><br>
+<input id="age" type="number" placeholder="Age"><br><br>
+<input id="doctor" placeholder="Doctor"><br><br>
+<input id="category" placeholder="Category"><br><br>
+
+<button onclick="send()">Submit</button>
+<p id="result"></p>
+
+<script>
+function send() {
+    const data = {
+        name: name.value,
+        email: email.value,
+        age: Number(age.value),
+        doctor_name: doctor.value,
+        category_name: category.value
+    };
+
+    fetch("/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+    })
+    .then(async r => {
+        const text = await r.text();
+        console.log(text);
+        if (!r.ok) throw new Error(text);
+        return JSON.parse(text);
+    })
+    .then(j => {
+        result.innerText = "✅ Saved ID: " + j.submission_id;
+    })
+    .catch(e => {
+        console.error(e);
+        result.innerText = "❌ " + e.message;
+    });
+}
+</script>
+
+</body>
+</html>

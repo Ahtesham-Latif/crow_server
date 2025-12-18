@@ -1,1 +1,25 @@
-{ "configurations": [ { "name": "MinGW-w64 GCC 15.2.0", "includePath": [ "${workspaceFolder}/**", "D:/SE Project/CROW/include", "C:/Program Files/MariaDB/MariaDB C++ Connector 64-bit/include" ], "browse": { "path": [ "${workspaceFolder}/**", "D:/SE Project/CROW/include", "C:/Program Files/MariaDB/MariaDB C++ Connector 64-bit/include" ], "limitSymbolsToIncludedHeaders": true }, "defines": [ "_DEBUG", "UNICODE", "_UNICODE", "ASIO_STANDALONE" ], "compilerPath": "D:/msys64/mingw64/bin/g++.exe", "cStandard": "c17", "cppStandard": "c++17", "intelliSenseMode": "windows-gcc-x64" } ], "version": 4 }
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/Crow/include",
+                "${workspaceFolder}/httplib",
+                "${workspaceFolder}/controllers",
+                "${workspaceFolder}/models"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE",
+                "_WIN32_WINNT=0x0A00"
+            ],
+            "compilerPath": "D:/msys64/mingw64/bin/g++.exe",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "windows-gcc-x64"
+        }
+    ],
+    "version": 4
+}

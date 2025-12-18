@@ -1,17 +1,29 @@
-# Build artifacts
-/build/
+# ===== Build artifacts =====
+build/
+cmake-build-*/
 CMakeFiles/
 CMakeCache.txt
-cmake_install.cmake
 Makefile
+cmake_install.cmake
+*.exe
 
-# Databases
-*.db
-
-# Environment variables
+# ===== Environment variables / secrets =====
 .env
 
-# OS / editor junk
+# ===== Database files (local / temp) =====
+db/*.db
+db/*.sqbpro
+*.db
+*.sqlite
+*.sqlite3
+
+# ===== IDE / Editor =====
 .vscode/
+.idea/
+
+# ===== OS junk =====
+.DS_Store
+Thumbs.db
+
+# ===== Logs =====
 *.log
-*.exe
