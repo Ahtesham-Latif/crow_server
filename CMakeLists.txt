@@ -29,6 +29,7 @@ add_executable(server
     main.cpp
     controllers/category_controller.cpp
     controllers/doctor_controller.cpp
+    controllers/schedule_controller.cpp
 )
 
 # ---- Libraries ----

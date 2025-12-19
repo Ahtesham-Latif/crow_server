@@ -1,28 +1,39 @@
 {
-  "version": 4,
-  "configurations": [
-    {
-      "name": "MinGW64",
-      "compilerPath": "D:/msys64/mingw64/bin/g++.exe",
-      "intelliSenseMode": "windows-gcc-x64",
-      "cStandard": "c17",
-      "cppStandard": "c++17",
-
-      "includePath": [
-        "${workspaceFolder}",
-        "${workspaceFolder}/**",
-        "${workspaceFolder}/Crow/include",
-        "${workspaceFolder}/httplib",
-        "${workspaceFolder}/controllers",
-        "${workspaceFolder}/models"
-      ],
-
-      "defines": [
-        "_DEBUG",
-        "UNICODE",
-        "_UNICODE",
-        "_WIN32_WINNT=0x0A00"
-      ]
-    }
-  ]
+    "version": 4,
+    "configurations": [
+        {
+            "name": "MinGW64",
+            "compilerPath": "D:/msys64/mingw64/bin/g++.exe",
+            "intelliSenseMode": "windows-gcc-x64",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "browse": {
+                "path": [
+                    "${workspaceFolder}",
+                    "${workspaceFolder}/Crow/include",
+                    "${workspaceFolder}/httplib",
+                    "${workspaceFolder}/controllers",
+                    "${workspaceFolder}/models",
+                    "${workspaceFolder}/views",
+                    "${workspaceFolder}/public",
+                    "${workspaceFolder}/db"
+                ],
+                "limitSymbolsToIncludedHeaders": false,
+                "databaseFilename": ""
+            },
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/Crow/include",
+                "${workspaceFolder}/httplib",
+                "${workspaceFolder}/controllers",
+                "${workspaceFolder}/models"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE",
+                "_WIN32_WINNT=0x0A00"
+            ]
+        }
+    ]
 }

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Appointments</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        h1 { color: #333; }
+        select, input[type="date"] { font-size: 16px; padding: 5px; margin-top: 10px; }
+        button { padding: 5px 10px; margin-left: 10px; }
+        .doctor-card { border: 1px solid #ccc; padding: 10px; margin-top: 10px; border-radius: 5px; }
+        .slots { margin-top: 10px; }
+        .slot { display: inline-block; border: 1px solid #999; padding: 5px 10px; margin: 5px; border-radius: 3px; cursor: pointer; }
+        .slot.booked { background-color: #f88; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+    <h1>Select a Category and Date</h1>
+
+    <form id="categoryForm">
+        <select id="categorySelect">
+            <option value="">-- Loading categories --</option>
+        </select>
+        <input type="date" id="appointmentDate" />
+        <button type="submit">Submit</button>
+    </form>
+
+    <div id="doctorsContainer"></div>
+    <div id="slotsContainer"></div>
+
+    <script>
+        // Fetch categories
+        async function fetchCategories() {
+            try {
+                const res = await fetch("/get_categories");
+                if (!res.ok) throw new Error("Failed to fetch categories");
+                const data = await res.json();
+
+                const select = document.getElementById("categorySelect");
+                select.innerHTML = "<option value=''>-- Select a category --</option>";
+                data.forEach(cat => {
+                    const option = document.createElement("option");
+                    option.value = cat.category_id;
+                    option.textContent = cat.category_name;
+                    select.appendChild(option);
+                });
+            } catch (err) {
+                const select = document.getElementById("categorySelect");
+                select.innerHTML = "<option value=''>Error loading categories</option>";
+                console.error(err);
+            }
+        }
+
+        // Fetch doctors for selected category
+        async function fetchDoctors(categoryId) {
+            try {
+                const res = await fetch(`/get_doctors?category_id=${categoryId}`);
+                if (!res.ok) throw new Error("Failed to fetch doctors");
+                const doctors = await res.json();
+
+                const container = document.getElementById("doctorsContainer");
+                container.innerHTML = "";
+                document.getElementById("slotsContainer").innerHTML = "";
+
+                if (doctors.length === 0) {
+                    container.textContent = "No doctors found for this category.";
+                    return;
+                }
+
+                doctors.forEach(doc => {
+                    const div = document.createElement("div");
+                    div.className = "doctor-card";
+                    div.innerHTML = `
+                        <strong>${doc.doctor_name}</strong><br>
+                        Experience: ${doc.experience_years} yrs<br>
+                        Degree: ${doc.qualifications}<br>
+                        Rating: ${doc.ratings}
+                        <br><button onclick="fetchSlots(${doc.doctor_id})">View Slots</button>
+                    `;
+                    container.appendChild(div);
+                });
+
+            } catch (err) {
+                const container = document.getElementById("doctorsContainer");
+                container.textContent = "Error loading doctors.";
+                console.error(err);
+            }
+        }
+
+        // Fetch available slots for selected doctor on selected date
+        async function fetchSlots(doctorId) {
+            const date = document.getElementById("appointmentDate").value;
+            if (!date) {
+                alert("Please select a date first");
+                return;
+            }
+
+            try {
+                const res = await fetch(`/get_available_slots/${doctorId}/${date}`);
+                if (!res.ok) throw new Error("Failed to fetch slots");
+                const slots = await res.json();
+
+                const container = document.getElementById("slotsContainer");
+                container.innerHTML = "<h2>Available Slots</h2>";
+                const slotsDiv = document.createElement("div");
+                slotsDiv.className = "slots";
+
+                if (slots.length === 0) {
+                    slotsDiv.textContent = "No available slots for this date.";
+                } else {
+                    slots.forEach(slot => {
+                        const slotDiv = document.createElement("div");
+                        slotDiv.className = "slot";
+                        slotDiv.textContent = slot.time_slot;
+                        slotDiv.onclick = () => alert(`Selected slot: ${slot.time_slot}`);
+                        slotsDiv.appendChild(slotDiv);
+                    });
+                }
+
+                container.appendChild(slotsDiv);
+
+            } catch (err) {
+                const container = document.getElementById("slotsContainer");
+                container.textContent = "Error loading slots.";
+                console.error(err);
+            }
+        }
+
+        // Form submit: fetch doctors for selected category
+        document.getElementById("categoryForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+            const select = document.getElementById("categorySelect");
+            const categoryId = select.value;
+            if (!categoryId) return;
+
+            fetchDoctors(categoryId);
+        });
+
+        // Load categories on page load
+        fetchCategories();
+    </script>
+</body>
+</html>

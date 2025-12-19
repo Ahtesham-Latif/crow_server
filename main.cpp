@@ -4,9 +4,10 @@
 #include <fstream>
 #include <sstream>
 
-// Controllers (ONLY headers)
+// Controllers (headers only)
 #include "controllers/category_controller.h"
 #include "controllers/doctor_controller.h"
+#include "controllers/schedule_controller.h"   // <-- Added
 
 // -------------------------------------------------
 // Helper: Serve static HTML files
@@ -58,11 +59,17 @@ int main() {
         return serveFile("../public/doctor.html");
     });
 
+    CROW_ROUTE(app, "/schedule_page")   // <-- New page for calendar/slots
+    ([]() {
+        return serveFile("../public/schedule.html");
+    });
+
     // -------------------------------------------------
     // API routes (MVC controllers)
     // -------------------------------------------------
     registerCategoryRoutes(app, db);
     registerDoctorRoutes(app, db);
+    registerScheduleRoutes(app, db);   // <-- Register schedule routes
 
     // -------------------------------------------------
     // Run server
