@@ -2,141 +2,658 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Appointments</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthCare - Schedule Appointment</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        h1 { color: #333; }
-        select, input[type="date"] { font-size: 16px; padding: 5px; margin-top: 10px; }
-        button { padding: 5px 10px; margin-left: 10px; }
-        .doctor-card { border: 1px solid #ccc; padding: 10px; margin-top: 10px; border-radius: 5px; }
-        .slots { margin-top: 10px; }
-        .slot { display: inline-block; border: 1px solid #999; padding: 5px 10px; margin: 5px; border-radius: 3px; cursor: pointer; }
-        .slot.booked { background-color: #f88; cursor: not-allowed; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            padding: 20px 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .logo-text h1 {
+            color: #2d3748;
+            font-size: 24px;
+            margin-bottom: 2px;
+        }
+
+        .logo-text p {
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #48bb78;
+            font-weight: 500;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background: #48bb78;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .filter-section {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .filter-section h2 {
+            color: #2d3748;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .filter-form {
+            display: flex;
+            gap: 15px;
+            align-items: end;
+            flex-wrap: wrap;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #4a5568;
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 16px;
+            color: #2d3748;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn-search {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-search:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .doctors-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .doctor-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .doctor-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .doctor-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f7fafc;
+        }
+
+        .doctor-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .doctor-info {
+            flex: 1;
+        }
+
+        .doctor-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+
+        .doctor-stats {
+            display: flex;
+            gap: 15px;
+            font-size: 13px;
+            color: #718096;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .date-selector {
+            margin-bottom: 20px;
+        }
+
+        .date-selector label {
+            display: block;
+            color: #4a5568;
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+
+        .date-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 16px;
+            color: #2d3748;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .date-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .slots-section {
+            margin-top: 20px;
+        }
+
+        .slots-header {
+            color: #4a5568;
+            font-weight: 600;
+            margin-bottom: 12px;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .slots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+        }
+
+        .slot {
+            padding: 12px 8px;
+            text-align: center;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 14px;
+            color: #2d3748;
+            background: white;
+        }
+
+        .slot:hover {
+            border-color: #667eea;
+            background: #f7fafc;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        .slot.booked {
+            background: #fed7d7;
+            border-color: #fc8181;
+            color: #c53030;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .slot.booked:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #718096;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e2e8f0;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #718096;
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .empty-message {
+            font-size: 16px;
+            color: #4a5568;
+        }
+
+        .alert {
+            background: #fef5e7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #92400e;
+        }
+
+        .alert-icon {
+            font-size: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .filter-form {
+                flex-direction: column;
+            }
+
+            .form-group {
+                width: 100%;
+            }
+
+            .doctors-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .slots-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
     </style>
 </head>
 <body>
-    <h1>Select a Category and Date</h1>
+    <div class="header">
+        <div class="logo-section">
+            <div class="logo">+</div>
+            <div class="logo-text">
+                <h1>HealthCare</h1>
+                <p>Schedule Your Appointment</p>
+            </div>
+        </div>
+        <div class="status">
+            <span class="status-dot"></span>
+            <span>24/7 Available</span>
+        </div>
+    </div>
 
-    <form id="categoryForm">
-        <select id="categorySelect">
-            <option value="">-- Loading categories --</option>
-        </select>
-        <input type="date" id="appointmentDate" />
-        <button type="submit">Submit</button>
-    </form>
+    <div class="container">
+        <div class="filter-section">
+            <h2>Select Medical Specialty</h2>
+            <form id="categoryForm" class="filter-form">
+                <div class="form-group">
+                    <label for="categorySelect">Choose a specialty to find available doctors</label>
+                    <select id="categorySelect">
+                        <option value="">Loading categories...</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-search">Find Doctors</button>
+            </form>
+        </div>
 
-    <div id="doctorsContainer"></div>
-    <div id="slotsContainer"></div>
+        <div id="doctorsContainer"></div>
+    </div>
 
     <script>
-        // Fetch categories
+        let categories = [];
+        const today = new Date().toISOString().split('T')[0];
+
+        function getInitials(name) {
+            return name
+                .split(' ')
+                .map(word => word[0])
+                .join('')
+                .toUpperCase()
+                .slice(0, 2);
+        }
+
         async function fetchCategories() {
             try {
                 const res = await fetch("/get_categories");
                 if (!res.ok) throw new Error("Failed to fetch categories");
-                const data = await res.json();
+                categories = await res.json();
 
                 const select = document.getElementById("categorySelect");
-                select.innerHTML = "<option value=''>-- Select a category --</option>";
-                data.forEach(cat => {
+                select.innerHTML = "<option value=''>-- Select a specialty --</option>";
+                categories.forEach(cat => {
                     const option = document.createElement("option");
                     option.value = cat.category_id;
                     option.textContent = cat.category_name;
                     select.appendChild(option);
                 });
             } catch (err) {
-                const select = document.getElementById("categorySelect");
-                select.innerHTML = "<option value=''>Error loading categories</option>";
                 console.error(err);
+                document.getElementById("categorySelect").innerHTML = "<option value=''>Error loading categories</option>";
             }
         }
 
-        // Fetch doctors for selected category
         async function fetchDoctors(categoryId) {
+            const container = document.getElementById("doctorsContainer");
+            
+            container.innerHTML = `
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <div>Loading available doctors...</div>
+                </div>
+            `;
+
             try {
                 const res = await fetch(`/get_doctors?category_id=${categoryId}`);
                 if (!res.ok) throw new Error("Failed to fetch doctors");
                 const doctors = await res.json();
 
-                const container = document.getElementById("doctorsContainer");
                 container.innerHTML = "";
-                document.getElementById("slotsContainer").innerHTML = "";
 
                 if (doctors.length === 0) {
-                    container.textContent = "No doctors found for this category.";
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">🩺</div>
+                            <div class="empty-message">No doctors found for this specialty</div>
+                        </div>
+                    `;
                     return;
                 }
 
+                const categoryName = categories.find(c => c.category_id == categoryId).category_name;
+
+                const grid = document.createElement("div");
+                grid.className = "doctors-grid";
+
                 doctors.forEach(doc => {
-                    const div = document.createElement("div");
-                    div.className = "doctor-card";
-                    div.innerHTML = `
-                        <strong>${doc.doctor_name}</strong><br>
-                        Experience: ${doc.experience_years} yrs<br>
-                        Degree: ${doc.qualifications}<br>
-                        Rating: ${doc.ratings}
-                        <br><button onclick="fetchSlots(${doc.doctor_id})">View Slots</button>
+                    const card = document.createElement("div");
+                    card.className = "doctor-card";
+                    card.innerHTML = `
+                        <div class="doctor-header">
+                            <div class="doctor-avatar">${getInitials(doc.doctor_name)}</div>
+                            <div class="doctor-info">
+                                <div class="doctor-name">${doc.doctor_name}</div>
+                                <div class="doctor-stats">
+                                    <div class="stat-item">
+                                        <span>🎓</span>
+                                        <span>${doc.qualifications}</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span>💼</span>
+                                        <span>${doc.experience_years} yrs</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span>⭐</span>
+                                        <span>${doc.ratings}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="date-selector">
+                            <label for="date_${doc.doctor_id}">📅 Select Appointment Date</label>
+                            <input type="date" 
+                                   id="date_${doc.doctor_id}" 
+                                   class="date-input"
+                                   min="${today}" />
+                        </div>
+
+                        <div id="slots_${doc.doctor_id}" class="slots-section"></div>
                     `;
-                    container.appendChild(div);
+                    grid.appendChild(card);
+
+                    const dateInput = card.querySelector(`#date_${doc.doctor_id}`);
+                    dateInput.addEventListener("change", () => {
+                        handleDateChange(doc.doctor_id, categoryName, doc.doctor_name);
+                    });
                 });
 
+                container.appendChild(grid);
+
             } catch (err) {
-                const container = document.getElementById("doctorsContainer");
-                container.textContent = "Error loading doctors.";
                 console.error(err);
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">❌</div>
+                        <div class="empty-message">Error loading doctors. Please try again.</div>
+                    </div>
+                `;
             }
         }
 
-        // Fetch available slots for selected doctor on selected date
-        async function fetchSlots(doctorId) {
-            const date = document.getElementById("appointmentDate").value;
-            if (!date) {
-                alert("Please select a date first");
+        function handleDateChange(doctorId, categoryName, doctorName) {
+            const selectedDate = document.getElementById(`date_${doctorId}`).value;
+            const slotsContainer = document.getElementById(`slots_${doctorId}`);
+            
+            if (!selectedDate) {
+                slotsContainer.innerHTML = "";
                 return;
             }
+
+            const dateObj = new Date(selectedDate);
+            const day = dateObj.getDay();
+
+            if (selectedDate < today) {
+                slotsContainer.innerHTML = `
+                    <div class="alert">
+                        <div class="alert-icon">⚠️</div>
+                        <div>Please select today or a future date.</div>
+                    </div>
+                `;
+                document.getElementById(`date_${doctorId}`).value = "";
+                return;
+            }
+
+            if (day === 0 || day === 5 || day === 6) {
+                slotsContainer.innerHTML = `
+                    <div class="alert">
+                        <div class="alert-icon">🚫</div>
+                        <div>Appointments cannot be scheduled on Friday, Saturday, or Sunday.</div>
+                    </div>
+                `;
+                document.getElementById(`date_${doctorId}`).value = "";
+                return;
+            }
+
+            viewSlots(doctorId, categoryName, doctorName);
+        }
+
+        async function viewSlots(doctorId, categoryName, doctorName) {
+            const date = document.getElementById(`date_${doctorId}`).value;
+            const container = document.getElementById(`slots_${doctorId}`);
+            
+            if (!date || date < today) return;
+
+            container.innerHTML = `
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <div>Loading available time slots...</div>
+                </div>
+            `;
 
             try {
                 const res = await fetch(`/get_available_slots/${doctorId}/${date}`);
                 if (!res.ok) throw new Error("Failed to fetch slots");
                 const slots = await res.json();
 
-                const container = document.getElementById("slotsContainer");
-                container.innerHTML = "<h2>Available Slots</h2>";
-                const slotsDiv = document.createElement("div");
-                slotsDiv.className = "slots";
+                container.innerHTML = "";
 
                 if (slots.length === 0) {
-                    slotsDiv.textContent = "No available slots for this date.";
-                } else {
-                    slots.forEach(slot => {
-                        const slotDiv = document.createElement("div");
-                        slotDiv.className = "slot";
-                        slotDiv.textContent = slot.time_slot;
-                        slotDiv.onclick = () => alert(`Selected slot: ${slot.time_slot}`);
-                        slotsDiv.appendChild(slotDiv);
-                    });
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">📅</div>
+                            <div class="empty-message">No available slots for this date</div>
+                        </div>
+                    `;
+                    return;
                 }
 
-                container.appendChild(slotsDiv);
+                const slotsSection = document.createElement("div");
+                slotsSection.innerHTML = `
+                    <div class="slots-header">
+                        ⏰ Available Time Slots
+                    </div>
+                    <div class="slots-grid" id="grid_${doctorId}"></div>
+                `;
+                container.appendChild(slotsSection);
+
+                const grid = document.getElementById(`grid_${doctorId}`);
+
+                slots.forEach(slot => {
+                    const slotDiv = document.createElement("div");
+                    slotDiv.className = "slot";
+                    slotDiv.textContent = slot.time_slot;
+                    slotDiv.onclick = () => {
+                        const url = `/appointment_page?category=${encodeURIComponent(categoryName)}&doctor=${encodeURIComponent(doctorName)}&date=${date}&slot=${encodeURIComponent(slot.time_slot)}`;
+                        window.location.href = url;
+                    };
+                    grid.appendChild(slotDiv);
+                });
 
             } catch (err) {
-                const container = document.getElementById("slotsContainer");
-                container.textContent = "Error loading slots.";
                 console.error(err);
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">❌</div>
+                        <div class="empty-message">Error loading time slots</div>
+                    </div>
+                `;
             }
         }
 
-        // Form submit: fetch doctors for selected category
         document.getElementById("categoryForm").addEventListener("submit", function(e) {
             e.preventDefault();
-            const select = document.getElementById("categorySelect");
-            const categoryId = select.value;
-            if (!categoryId) return;
-
+            const categoryId = document.getElementById("categorySelect").value;
+            
+            if (!categoryId) {
+                alert("Please select a specialty first");
+                return;
+            }
+            
             fetchDoctors(categoryId);
         });
 
-        // Load categories on page load
         fetchCategories();
     </script>
 </body>

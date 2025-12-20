@@ -2,53 +2,405 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Categories</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthCare - Book Your Appointment</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        h1 { color: #333; }
-        select { font-size: 16px; padding: 5px; margin-top: 10px; }
-        button { padding: 5px 10px; margin-left: 10px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            padding: 20px 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .logo-text h1 {
+            color: #2d3748;
+            font-size: 24px;
+            margin-bottom: 2px;
+        }
+
+        .logo-text p {
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #48bb78;
+            font-weight: 500;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background: #48bb78;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .title-section {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .title-section h2 {
+            color: #2d3748;
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+
+        .title-section p {
+            color: #718096;
+            font-size: 16px;
+        }
+
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .category-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .category-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .category-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+        }
+
+        .category-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .category-card.selected {
+            border: 2px solid var(--gradient-start);
+        }
+
+        .category-card.selected::before {
+            transform: scaleX(1);
+        }
+
+        .icon-wrapper {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .icon {
+            font-size: 48px;
+            color: white;
+        }
+
+        .category-name {
+            font-size: 22px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 12px;
+        }
+
+        .btn-find {
+            width: 100%;
+            padding: 15px;
+            margin-top: 20px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-find:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .btn-find:active {
+            transform: translateY(0);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: white;
+            font-size: 18px;
+        }
+
+        .error {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .selection-display {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-top: 30px;
+            display: none;
+        }
+
+        .selection-display.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .selection-display h3 {
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .selection-display p {
+            color: #48bb78;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        /* Color schemes for different categories */
+        .category-card:nth-child(3n+1) {
+            --gradient-start: #10b981;
+            --gradient-end: #059669;
+        }
+
+        .category-card:nth-child(3n+2) {
+            --gradient-start: #3b82f6;
+            --gradient-end: #2563eb;
+        }
+
+        .category-card:nth-child(3n+3) {
+            --gradient-start: #ec4899;
+            --gradient-end: #f43f5e;
+        }
+
+        @media (max-width: 768px) {
+            .categories-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .title-section h2 {
+                font-size: 24px;
+            }
+        }
     </style>
 </head>
 <body>
-    <h1>Select a Category</h1>
-    <form id="categoryForm">
-        <select id="categorySelect">
-            <option value="">-- Loading categories --</option>
-        </select>
-        <button type="submit">Submit</button>
-    </form>
-    <p id="selectedCategory"></p>
+    <div class="header">
+        <div class="logo-section">
+            <div class="logo">+</div>
+            <div class="logo-text">
+                <h1>HealthCare</h1>
+                <p>Book Your Appointment</p>
+            </div>
+        </div>
+        <div class="status">
+            <span class="status-dot"></span>
+            <span>24/7 Available</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="title-section">
+            <h2>Choose a Medical Specialty</h2>
+            <p>Select a specialty to find the right healthcare professional for your needs</p>
+        </div>
+
+        <div id="categoriesContainer" class="categories-grid">
+            <div class="loading">Loading categories...</div>
+        </div>
+
+        <div id="selectionDisplay" class="selection-display">
+            <h3>Selected Category</h3>
+            <p id="selectedCategoryName"></p>
+        </div>
+    </div>
 
     <script>
+        const iconMap = {
+            'general': '🩺',
+            'dentistry': '😁',
+            'neurology': '🧠',
+            'cardiology': '❤️',
+            'pediatrics': '👶',
+            'orthopedics': '🦴',
+            'dermatology': '✨',
+            'ophthalmology': '👁️',
+            'psychiatry': '🧘',
+            'default': '🏥'
+        };
+
+        function getIcon(categoryName) {
+            const name = categoryName.toLowerCase();
+            for (let key in iconMap) {
+                if (name.includes(key)) return iconMap[key];
+            }
+            return iconMap.default;
+        }
+
         async function fetchCategories() {
             try {
                 const res = await fetch("/get_categories");
                 if (!res.ok) throw new Error("Failed to fetch categories");
                 const data = await res.json();
 
-                const select = document.getElementById("categorySelect");
-                select.innerHTML = "<option value=''>-- Select a category --</option>";
+                const container = document.getElementById("categoriesContainer");
+                container.innerHTML = '';
 
                 data.forEach(cat => {
-                    const option = document.createElement("option");
-                    option.value = cat.category_id;
-                    option.textContent = cat.category_name;
-                    select.appendChild(option);
+                    const card = document.createElement("div");
+                    card.className = "category-card";
+                    card.dataset.categoryId = cat.category_id;
+                    card.dataset.categoryName = cat.category_name;
+
+                    card.innerHTML = `
+                        <div class="icon-wrapper">
+                            <div class="icon">${getIcon(cat.category_name)}</div>
+                        </div>
+                        <div class="category-name">${cat.category_name}</div>
+                        <button class="btn-find">Find Doctors</button>
+                    `;
+
+                    const button = card.querySelector('.btn-find');
+                    button.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        selectCategory(cat.category_id, cat.category_name, card);
+                    });
+
+                    container.appendChild(card);
                 });
 
             } catch (err) {
-                document.getElementById("categorySelect").innerHTML = "<option value=''>Error loading categories</option>";
+                const container = document.getElementById("categoriesContainer");
+                container.innerHTML = '<div class="error">Error loading categories. Please try again later.</div>';
                 console.error(err);
             }
         }
 
-        document.getElementById("categoryForm").addEventListener("submit", function(e) {
-            e.preventDefault();
-            const select = document.getElementById("categorySelect");
-            const selected = select.options[select.selectedIndex].text;
-            document.getElementById("selectedCategory").textContent = "You selected: " + selected;
-        });
+        function selectCategory(categoryId, categoryName, cardElement) {
+            // Remove previous selection
+            document.querySelectorAll('.category-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+
+            // Add selection to clicked card
+            cardElement.classList.add('selected');
+
+            // Show selection display
+            const display = document.getElementById('selectionDisplay');
+            const nameDisplay = document.getElementById('selectedCategoryName');
+            nameDisplay.textContent = categoryName;
+            display.classList.add('show');
+
+            // Scroll to selection display
+            display.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+            console.log('Selected category:', categoryId, categoryName);
+            // Add your navigation logic here
+            // window.location.href = `/doctors?category=${categoryId}`;
+        }
 
         fetchCategories();
     </script>

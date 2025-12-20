@@ -4,10 +4,11 @@
 #include <fstream>
 #include <sstream>
 
-// Controllers (headers only)
+// Controllers
 #include "controllers/category_controller.h"
 #include "controllers/doctor_controller.h"
-#include "controllers/schedule_controller.h"   // <-- Added
+#include "controllers/schedule_controller.h"
+#include "controllers/appointment_controller.h"
 
 // -------------------------------------------------
 // Helper: Serve static HTML files
@@ -24,7 +25,6 @@ crow::response serveFile(const std::string& path) {
 
     std::stringstream buffer;
     buffer << file.rdbuf();
-
     res.set_header("Content-Type", "text/html");
     res.write(buffer.str());
     return res;
@@ -41,42 +41,34 @@ int main() {
     // -------------------------------------------------
     sqlite3* db = nullptr;
     if (sqlite3_open("../db/Marta_K Database.db", &db) != SQLITE_OK) {
-        std::cerr << "Failed to open DB: "
-                  << sqlite3_errmsg(db) << std::endl;
+        std::cerr << "Failed to open DB: " << sqlite3_errmsg(db) << std::endl;
         return 1;
     }
 
     // -------------------------------------------------
-    // Static pages
+    // Serve static HTML pages
     // -------------------------------------------------
-    CROW_ROUTE(app, "/categories_page")
-    ([]() {
-        return serveFile("../public/category.html");
-    });
-
-    CROW_ROUTE(app, "/doctors_page")
-    ([]() {
-        return serveFile("../public/doctor.html");
-    });
-
-    CROW_ROUTE(app, "/schedule_page")   // <-- New page for calendar/slots
-    ([]() {
-        return serveFile("../public/schedule.html");
-    });
+    CROW_ROUTE(app, "/categories_page")([]() { return serveFile("../public/category.html"); });
+    CROW_ROUTE(app, "/doctors_page")([]() { return serveFile("../public/doctor.html"); });
+    CROW_ROUTE(app, "/schedule_page")([]() { return serveFile("../public/schedule.html"); });
+    CROW_ROUTE(app, "/appointment_page")([]() { return serveFile("../public/appointment.html"); });
+    CROW_ROUTE(app, "/confirmation.html")([]() { return serveFile("../public/confirmation.html"); });  // <- updated route
 
     // -------------------------------------------------
     // API routes (MVC controllers)
     // -------------------------------------------------
     registerCategoryRoutes(app, db);
     registerDoctorRoutes(app, db);
-    registerScheduleRoutes(app, db);   // <-- Register schedule routes
+    registerScheduleRoutes(app, db);
+    registerAppointmentRoutes(app, db);
 
     // -------------------------------------------------
-    // Run server
+    // Start the server
     // -------------------------------------------------
     std::cout << "Server running at http://localhost:8080\n";
     app.port(8080).multithreaded().run();
 
+    // Close DB connection
     sqlite3_close(db);
     return 0;
 }

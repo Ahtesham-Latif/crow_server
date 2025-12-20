@@ -30,6 +30,8 @@ add_executable(server
     controllers/category_controller.cpp
     controllers/doctor_controller.cpp
     controllers/schedule_controller.cpp
+    controllers/patient_controller.cpp
+    controllers/appointment_controller.cpp
 )
 
 # ---- Libraries ----
