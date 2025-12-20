@@ -1,121 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cancel Appointment</title>
-<style>
-    body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        background: #f0f2f5;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-    }
-    .container {
-        background: white;
-        padding: 30px;
-        border-radius: 15px;
-        box-shadow: 0 8px 30px rgba(0,0,0,0.1);
-        width: 400px;
-    }
-    h2 {
-        text-align: center;
-        color: #2d3748;
-        margin-bottom: 20px;
-    }
-    label {
-        display: block;
-        font-weight: 600;
-        margin-bottom: 5px;
-        color: #4a5568;
-    }
-    input {
-        width: 100%;
-        padding: 12px;
-        margin-bottom: 20px;
-        font-size: 16px;
-        border-radius: 10px;
-        border: 2px solid #e2e8f0;
-    }
-    button {
-        width: 100%;
-        padding: 12px;
-        font-size: 16px;
-        font-weight: 600;
-        background-color: #667eea;
-        color: white;
-        border: none;
-        border-radius: 10px;
-        cursor: pointer;
-        transition: 0.3s;
-    }
-    button:hover {
-        background-color: #5a67d8;
-    }
-    .alert {
-        margin-top: 15px;
-        text-align: center;
-        font-weight: 600;
-    }
-    .alert.success { color: green; }
-    .alert.error { color: red; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthCare - Confirmation</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .confirmation-container { max-width: 600px; width: 100%; text-align: center; }
+        .card { background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); overflow: hidden; text-align: left; animation: slideUp 0.5s ease; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .card-header { background: #48bb78; padding: 25px; color: white; display: flex; align-items: center; gap: 15px; }
+        .card-body { padding: 30px; }
+
+        /* Dual ID Section */
+        .id-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .id-box { background: #f7fafc; padding: 12px; border-radius: 12px; border: 2px dashed #e2e8f0; text-align: center; }
+        .id-label { font-size: 11px; color: #718096; font-weight: 700; text-transform: uppercase; margin-bottom: 5px; }
+        .id-value { font-size: 20px; font-weight: 800; color: #667eea; }
+
+        .detail-item { display: flex; gap: 15px; padding: 12px; background: #f8fafc; border-radius: 12px; margin-bottom: 10px; border: 1px solid #edf2f7; }
+        .detail-label { font-size: 11px; color: #a0aec0; text-transform: uppercase; font-weight: 700; }
+        .detail-value { font-size: 16px; color: #2d3748; font-weight: 600; }
+        
+        .info-box { background: #fff5e6; border-left: 4px solid #f59e0b; padding: 15px; border-radius: 8px; margin: 20px 0; font-size: 13px; color: #92400e; }
+        .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .btn { padding: 15px; border-radius: 12px; font-weight: 700; text-align: center; text-decoration: none; border: none; transition: 0.2s; cursor: pointer; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-secondary { background: #edf2f7; color: #4a5568; }
+        @media (max-width: 480px) { .id-container, .actions { grid-template-columns: 1fr; } }
+    </style>
 </head>
 <body>
+    <div class="confirmation-container">
+        <h1 style="color: white; margin-bottom: 25px;">Success!</h1>
+        <div class="card">
+            <div class="card-header">
+                <span style="font-size: 32px;">✅</span>
+                <div>
+                    <h3>Booking Confirmed</h3>
+                    <p style="font-size: 13px; opacity: 0.9;">Check your email for details</p>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="id-container">
+                    <div class="id-box">
+                        <div class="id-label">Appointment ID</div>
+                        <div class="id-value" id="disp_appt_id">#--</div>
+                    </div>
+                    <div class="id-box">
+                        <div class="id-label">Patient ID</div>
+                        <div class="id-value" id="disp_pat_id">#--</div>
+                    </div>
+                </div>
 
-<div class="container">
-    <h2>Cancel Your Appointment</h2>
-    <form id="cancelForm">
-        <label for="appointmentId">Appointment ID</label>
-        <input type="number" id="appointmentId" required placeholder="Enter your Appointment ID">
+                <div class="detail-item">
+                    <span>👤</span>
+                    <div><div class="detail-label">Patient Name</div><div class="detail-value" id="disp_name">--</div></div>
+                </div>
+                <div class="detail-item">
+                    <span>👨‍⚕️</span>
+                    <div><div class="detail-label">Doctor</div><div class="detail-value" id="disp_doctor">--</div></div>
+                </div>
+                <div class="detail-item">
+                    <span>📅</span>
+                    <div><div class="detail-label">Date & Time</div><div class="detail-value" id="disp_datetime">--</div></div>
+                </div>
 
-        <label for="patientId">Patient ID</label>
-        <input type="number" id="patientId" required placeholder="Enter your Patient ID">
+                <div class="info-box">
+                    <strong>Note:</strong> Please keep your <strong>Patient ID</strong> for future visits to this clinic.
+                </div>
 
-        <button type="submit">Cancel Appointment</button>
-    </form>
-    <div id="alert" class="alert"></div>
-</div>
+                <div class="actions">
+                    <a href="/categories_page" class="btn btn-secondary">Book Another</a>
+                    <button onclick="window.print()" class="btn btn-primary">Print Receipt</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<script>
-    const form = document.getElementById('cancelForm');
-    const alertDiv = document.getElementById('alert');
-
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        alertDiv.textContent = "";
-        alertDiv.className = "alert";
-
-        const appointment_id = document.getElementById('appointmentId').value;
-        const patient_id = document.getElementById('patientId').value;
-
-        try {
-            const res = await fetch('/cancel_appointment', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ appointment_id: parseInt(appointment_id), patient_id: parseInt(patient_id) })
-            });
-
-            const data = await res.json();
-
-            if (res.ok && data.success) {
-                alertDiv.textContent = data.message;
-                alertDiv.classList.add('success');
-                form.reset();
-            } else {
-                alertDiv.textContent = data.message || "Failed to cancel appointment";
-                alertDiv.classList.add('error');
-            }
-        } catch (err) {
-            console.error(err);
-            alertDiv.textContent = "Error connecting to server";
-            alertDiv.classList.add('error');
-        }
-    });
-</script>
-
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        
+        // Populate the IDs
+        document.getElementById("disp_appt_id").textContent = "#" + (params.get("appointment_id") || "0000");
+        document.getElementById("disp_pat_id").textContent = "#" + (params.get("patient_id") || "0000");
+        
+        // Populate Details
+        document.getElementById("disp_name").textContent = decodeURIComponent(params.get("patient_name") || "N/A");
+        
+        const doc = decodeURIComponent(params.get("doctor") || "Doctor");
+        document.getElementById("disp_doctor").textContent = doc.startsWith("Dr.") ? doc : "Dr. " + doc;
+        
+        const date = params.get("date") || "";
+        const time = decodeURIComponent(params.get("time") || "");
+        document.getElementById("disp_datetime").textContent = date + " at " + time;
+    </script>
 </body>
 </html>

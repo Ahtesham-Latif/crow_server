@@ -9,6 +9,7 @@ cmake_install.cmake
 
 # ===== Environment variables / secrets =====
 .env
+/config/n8n_config.h
 
 # ===== Database files (local / temp) =====
 db/*.db

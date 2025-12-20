@@ -53,8 +53,12 @@ int main() {
     CROW_ROUTE(app, "/doctors_page")([]() { return serveFile("../public/doctor.html"); });
     CROW_ROUTE(app, "/schedule_page")([]() { return serveFile("../public/schedule.html"); });
     CROW_ROUTE(app, "/appointment_page")([]() { return serveFile("../public/appointment.html"); });
-    CROW_ROUTE(app, "/confirmation.html")([]() { return serveFile("../public/confirmation.html"); });  // <- updated route
-    CROW_ROUTE(app, "/cancellation_page")([]() { return serveFile("../public/cancellation.html"); });
+    CROW_ROUTE(app, "/confirmation_page")([]() { return serveFile("../public/confirmation.html"); });
+    
+    // ✅ Match your actual file name here
+    CROW_ROUTE(app, "/cancel_appointment_page")([]() { 
+        return serveFile("../public/cancellation.html"); 
+    });
 
     // -------------------------------------------------
     // API routes (MVC controllers)
