@@ -9,6 +9,7 @@
 #include "controllers/doctor_controller.h"
 #include "controllers/schedule_controller.h"
 #include "controllers/appointment_controller.h"
+#include "controllers/cancellation_controller.h"
 
 // -------------------------------------------------
 // Helper: Serve static HTML files
@@ -53,6 +54,7 @@ int main() {
     CROW_ROUTE(app, "/schedule_page")([]() { return serveFile("../public/schedule.html"); });
     CROW_ROUTE(app, "/appointment_page")([]() { return serveFile("../public/appointment.html"); });
     CROW_ROUTE(app, "/confirmation.html")([]() { return serveFile("../public/confirmation.html"); });  // <- updated route
+    CROW_ROUTE(app, "/cancellation_page")([]() { return serveFile("../public/cancellation.html"); });
 
     // -------------------------------------------------
     // API routes (MVC controllers)
@@ -61,6 +63,7 @@ int main() {
     registerDoctorRoutes(app, db);
     registerScheduleRoutes(app, db);
     registerAppointmentRoutes(app, db);
+    registerCancellationRoutes(app, db);
 
     // -------------------------------------------------
     // Start the server

@@ -3,6 +3,14 @@
 #include "../models/doctor.h"
 #include "../models/appointment.h"
 #include <iostream>
+#include <random>
+
+int generateRandomID(int min = 100000, int max = 999999) {
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(min, max);
+    return dis(gen);
+}
 
 void registerAppointmentRoutes(crow::SimpleApp& app, sqlite3* db) {
 
@@ -20,9 +28,9 @@ void registerAppointmentRoutes(crow::SimpleApp& app, sqlite3* db) {
         int age = body["age"].i();
         std::string email = body["email"].s();
         std::string gender = body["gender"].s();
-        std::string doctor_name = body["doctor_name"].s(); // frontend field
+        std::string doctor_name = body["doctor_name"].s();
         std::string appointment_date = body["date"].s();
-        std::string slot_time = body["slot"].s();          // frontend sends slot
+        std::string slot_time = body["slot"].s();
 
         if (name.empty() || doctor_name.empty() || appointment_date.empty() || slot_time.empty()) {
             return crow::response(400, "Missing required fields");
@@ -54,17 +62,31 @@ void registerAppointmentRoutes(crow::SimpleApp& app, sqlite3* db) {
 
         if (schedule_id == -1) return crow::response(400, "Schedule slot not found");
 
-        // --- Step 3: Insert patient ---
-        int patient_id = Patient::insert(db, name, age, email, gender);
-        if (patient_id == -1) return crow::response(500, "Failed to insert patient");
+        // --- Step 3: Generate unique random patient ID ---
+        int patient_id;
+        do {
+            patient_id = generateRandomID();
+        } while (Patient::exists(db, patient_id)); // ensure uniqueness
 
-        // --- Step 4: Insert appointment ---
-        bool ok = Appointment::insert(db, patient_id, doctor_id, schedule_id, appointment_date);
-        if (!ok) return crow::response(500, "Failed to book appointment");
+        // --- Step 4: Insert patient ---
+        if (!Patient::insert(db, patient_id, name, age, email, gender))
+            return crow::response(500, "Failed to insert patient");
+
+        // --- Step 5: Generate unique random appointment ID ---
+        int appointment_id;
+        do {
+            appointment_id = generateRandomID();
+        } while (Appointment::exists(db, appointment_id));
+
+        // --- Step 6: Insert appointment ---
+        if (!Appointment::insert(db, appointment_id, patient_id, doctor_id, schedule_id, appointment_date))
+            return crow::response(500, "Failed to book appointment");
 
         crow::json::wvalue res;
         res["success"] = true;
         res["message"] = "Appointment booked successfully!";
+        res["patient_id"] = patient_id;
+        res["appointment_id"] = appointment_id; // return generated IDs
         return crow::response(200, res);
     });
 }

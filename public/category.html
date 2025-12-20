@@ -1,408 +1,345 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HealthCare - Book Your Appointment</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MartaHealthcare - Book Your Appointment</title>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+    min-height: 100vh;
+  }
 
-        .header {
-            background: white;
-            padding: 20px 40px;
-            border-radius: 15px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            margin-bottom: 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+  /* Header */
+  .header {
+    background: white;
+    padding: 20px 40px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
 
-        .logo-section {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
+  .logo-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
 
-        .logo {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 24px;
-            font-weight: bold;
-        }
+  .logo {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+  }
 
-        .logo-text h1 {
-            color: #2d3748;
-            font-size: 24px;
-            margin-bottom: 2px;
-        }
+  .logo-text h1 {
+    font-size: 24px;
+    color: #2d3748;
+    margin-bottom: 2px;
+  }
 
-        .logo-text p {
-            color: #718096;
-            font-size: 14px;
-        }
+  .logo-text p {
+    font-size: 14px;
+    color: #718096;
+  }
 
-        .status {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #48bb78;
-            font-weight: 500;
-        }
+  .status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #48bb78;
+    font-size: 14px;
+    font-weight: 500;
+  }
 
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            background: #48bb78;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    background: #48bb78;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+  /* Main Content */
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 60px 20px;
+  }
 
-        .title-section {
-            background: white;
-            padding: 40px;
-            border-radius: 20px;
-            text-align: center;
-            margin-bottom: 40px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-        }
+  .title-section {
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    margin-bottom: 50px;
+  }
 
-        .title-section h2 {
-            color: #2d3748;
-            font-size: 32px;
-            margin-bottom: 12px;
-        }
+  .title-section h1 {
+    font-size: 32px;
+    color: #2d3748;
+    margin-bottom: 12px;
+  }
 
-        .title-section p {
-            color: #718096;
-            font-size: 16px;
-        }
+  .title-section p {
+    font-size: 16px;
+    color: #718096;
+  }
 
-        .categories-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin-bottom: 30px;
-        }
+  /* Categories Grid */
+  #categories {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 30px;
+    margin-top: 30px;
+  }
 
-        .category-card {
-            background: white;
-            border-radius: 20px;
-            padding: 40px 30px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-        }
+  .category-card {
+    background: white;
+    border-radius: 20px;
+    padding: 40px 30px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
 
-        .category-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 5px;
-            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
-            transform: scaleX(0);
-            transition: transform 0.3s ease;
-        }
+  .category-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+  }
 
-        .category-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
-        }
+  .icon-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+    font-size: 48px;
+    transition: all 0.3s ease;
+  }
 
-        .category-card:hover::before {
-            transform: scaleX(1);
-        }
+  .category-card:hover .icon-circle {
+    transform: scale(1.1);
+  }
 
-        .category-card.selected {
-            border: 2px solid var(--gradient-start);
-        }
+  .category-card h3 {
+    font-size: 22px;
+    color: #2d3748;
+    margin-bottom: 12px;
+  }
 
-        .category-card.selected::before {
-            transform: scaleX(1);
-        }
+  .category-card p {
+    font-size: 14px;
+    color: #718096;
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
 
-        .icon-wrapper {
-            width: 100px;
-            height: 100px;
-            margin: 0 auto 25px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-        }
+  .find-doctors-btn {
+    width: 100%;
+    padding: 14px 28px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
 
-        .icon {
-            font-size: 48px;
-            color: white;
-        }
+  .find-doctors-btn:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  }
 
-        .category-name {
-            font-size: 22px;
-            font-weight: 600;
-            color: #2d3748;
-            margin-bottom: 12px;
-        }
+  /* Dynamic color schemes for different categories */
+  .category-card:nth-child(3n+1) .icon-circle {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+  }
 
-        .btn-find {
-            width: 100%;
-            padding: 15px;
-            margin-top: 20px;
-            border: none;
-            border-radius: 12px;
-            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
-            color: white;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
+  .category-card:nth-child(3n+1) .find-doctors-btn {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  }
 
-        .btn-find:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-        }
+  .category-card:nth-child(3n+2) .icon-circle {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.3);
+  }
 
-        .btn-find:active {
-            transform: translateY(0);
-        }
+  .category-card:nth-child(3n+2) .find-doctors-btn {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  }
 
-        .loading {
-            text-align: center;
-            padding: 60px;
-            color: white;
-            font-size: 18px;
-        }
+  .category-card:nth-child(3n+3) .icon-circle {
+    background: linear-gradient(135deg, #ec4899 0%, #ef4444 100%);
+    box-shadow: 0 8px 24px rgba(236, 72, 153, 0.3);
+  }
 
-        .error {
-            background: #fed7d7;
-            color: #c53030;
-            padding: 20px;
-            border-radius: 12px;
-            text-align: center;
-            margin: 20px 0;
-        }
+  .category-card:nth-child(3n+3) .find-doctors-btn {
+    background: linear-gradient(135deg, #ec4899 0%, #ef4444 100%);
+  }
 
-        .selection-display {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            margin-top: 30px;
-            display: none;
-        }
+  /* Loading state */
+  .loading {
+    text-align: center;
+    padding: 60px;
+    color: #718096;
+    font-size: 18px;
+  }
 
-        .selection-display.show {
-            display: block;
-            animation: slideIn 0.3s ease;
-        }
+  /* Error state */
+  .error {
+    background: #fee;
+    border: 1px solid #fcc;
+    color: #c33;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+  }
 
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+  @media (max-width: 768px) {
+    .header {
+      padding: 15px 20px;
+    }
 
-        .selection-display h3 {
-            color: #2d3748;
-            margin-bottom: 10px;
-        }
+    .title-section {
+      padding: 30px 20px;
+    }
 
-        .selection-display p {
-            color: #48bb78;
-            font-size: 20px;
-            font-weight: 600;
-        }
+    .title-section h1 {
+      font-size: 24px;
+    }
 
-        /* Color schemes for different categories */
-        .category-card:nth-child(3n+1) {
-            --gradient-start: #10b981;
-            --gradient-end: #059669;
-        }
-
-        .category-card:nth-child(3n+2) {
-            --gradient-start: #3b82f6;
-            --gradient-end: #2563eb;
-        }
-
-        .category-card:nth-child(3n+3) {
-            --gradient-start: #ec4899;
-            --gradient-end: #f43f5e;
-        }
-
-        @media (max-width: 768px) {
-            .categories-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .header {
-                flex-direction: column;
-                gap: 15px;
-                text-align: center;
-            }
-
-            .title-section h2 {
-                font-size: 24px;
-            }
-        }
-    </style>
+    #categories {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+  }
+</style>
 </head>
+
 <body>
-    <div class="header">
-        <div class="logo-section">
-            <div class="logo">+</div>
-            <div class="logo-text">
-                <h1>HealthCare</h1>
-                <p>Book Your Appointment</p>
-            </div>
-        </div>
-        <div class="status">
-            <span class="status-dot"></span>
-            <span>24/7 Available</span>
-        </div>
+
+<!-- Header -->
+<div class="header">
+  <div class="logo-container">
+    <div class="logo">❤️</div>
+    <div class="logo-text">
+      <h1>HealthCare</h1>
+      <p>Book Your Appointment</p>
     </div>
+  </div>
+  <div class="status">
+    <span class="status-dot"></span>
+    24/7 Available
+  </div>
+</div>
 
-    <div class="container">
-        <div class="title-section">
-            <h2>Choose a Medical Specialty</h2>
-            <p>Select a specialty to find the right healthcare professional for your needs</p>
-        </div>
+<!-- Main Content -->
+<div class="container">
+  <div class="title-section">
+    <h1>Choose a Medical Specialty</h1>
+    <p>Select a specialty to find the right healthcare professional for your needs</p>
+  </div>
 
-        <div id="categoriesContainer" class="categories-grid">
-            <div class="loading">Loading categories...</div>
-        </div>
+  <div id="categories">
+    <div class="loading">Loading categories...</div>
+  </div>
+</div>
 
-        <div id="selectionDisplay" class="selection-display">
-            <h3>Selected Category</h3>
-            <p id="selectedCategoryName"></p>
-        </div>
-    </div>
+<script>
+// Icon mapping for different medical specialties
+const iconMap = {
+  'general': '🩺',
+  'dentistry': '😊',
+  'neurology': '🧠',
+  'cardiology': '❤️',
+  'pediatrics': '👶',
+  'orthopedics': '🦴',
+  'dermatology': '✨',
+  'ophthalmology': '👁️',
+  'psychiatry': '🧘',
+  'surgery': '⚕️'
+};
 
-    <script>
-        const iconMap = {
-            'general': '🩺',
-            'dentistry': '😁',
-            'neurology': '🧠',
-            'cardiology': '❤️',
-            'pediatrics': '👶',
-            'orthopedics': '🦴',
-            'dermatology': '✨',
-            'ophthalmology': '👁️',
-            'psychiatry': '🧘',
-            'default': '🏥'
-        };
+function getIcon(categoryName) {
+  const name = categoryName.toLowerCase();
+  for (const [key, icon] of Object.entries(iconMap)) {
+    if (name.includes(key)) return icon;
+  }
+  return '🏥'; // Default icon
+}
 
-        function getIcon(categoryName) {
-            const name = categoryName.toLowerCase();
-            for (let key in iconMap) {
-                if (name.includes(key)) return iconMap[key];
-            }
-            return iconMap.default;
-        }
+async function loadCategories() {
+  const container = document.getElementById("categories");
+  
+  try {
+    const res = await fetch("http://localhost:8080/get_categories");
+    if (!res.ok) throw new Error("Failed to fetch categories");
 
-        async function fetchCategories() {
-            try {
-                const res = await fetch("/get_categories");
-                if (!res.ok) throw new Error("Failed to fetch categories");
-                const data = await res.json();
+    const categories = await res.json();
+    container.innerHTML = '';
 
-                const container = document.getElementById("categoriesContainer");
-                container.innerHTML = '';
+    if (categories.length === 0) {
+      container.innerHTML = '<div class="loading">No categories available</div>';
+      return;
+    }
 
-                data.forEach(cat => {
-                    const card = document.createElement("div");
-                    card.className = "category-card";
-                    card.dataset.categoryId = cat.category_id;
-                    card.dataset.categoryName = cat.category_name;
+    categories.forEach(cat => {
+      const div = document.createElement("div");
+      div.className = "category-card";
+      
+      const icon = getIcon(cat.category_name);
+      
+      div.innerHTML = `
+        <div class="icon-circle">${icon}</div>
+        <h3>${cat.category_name}</h3>
+        <p>${cat.description || 'Find qualified healthcare professionals in this specialty'}</p>
+        <button class="find-doctors-btn">Find Doctors</button>
+      `;
 
-                    card.innerHTML = `
-                        <div class="icon-wrapper">
-                            <div class="icon">${getIcon(cat.category_name)}</div>
-                        </div>
-                        <div class="category-name">${cat.category_name}</div>
-                        <button class="btn-find">Find Doctors</button>
-                    `;
+      div.onclick = () => {
+            window.location.href =
+          `/doctors_page?category_id=${cat.category_id}&category_name=${encodeURIComponent(cat.category_name)}`;
+      };
 
-                    const button = card.querySelector('.btn-find');
-                    button.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        selectCategory(cat.category_id, cat.category_name, card);
-                    });
+      container.appendChild(div);
+    });
+  } catch (err) {
+    console.error(err);
+    container.innerHTML = '<div class="error">Failed to load categories. Please try again later.</div>';
+  }
+}
 
-                    container.appendChild(card);
-                });
+loadCategories();
+</script>
 
-            } catch (err) {
-                const container = document.getElementById("categoriesContainer");
-                container.innerHTML = '<div class="error">Error loading categories. Please try again later.</div>';
-                console.error(err);
-            }
-        }
-
-        function selectCategory(categoryId, categoryName, cardElement) {
-            // Remove previous selection
-            document.querySelectorAll('.category-card').forEach(card => {
-                card.classList.remove('selected');
-            });
-
-            // Add selection to clicked card
-            cardElement.classList.add('selected');
-
-            // Show selection display
-            const display = document.getElementById('selectionDisplay');
-            const nameDisplay = document.getElementById('selectedCategoryName');
-            nameDisplay.textContent = categoryName;
-            display.classList.add('show');
-
-            // Scroll to selection display
-            display.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
-            console.log('Selected category:', categoryId, categoryName);
-            // Add your navigation logic here
-            // window.location.href = `/doctors?category=${categoryId}`;
-        }
-
-        fetchCategories();
-    </script>
 </body>
 </html>
