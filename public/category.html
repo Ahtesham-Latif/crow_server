@@ -8,59 +8,393 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+    background: #f8f9fc;
     min-height: 100vh;
   }
   .header {
-    background: white; padding: 20px 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    display: flex; justify-content: space-between; align-items: center;
+    background: white; 
+    padding: 20px 40px; 
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
   }
-  .logo-container { display: flex; align-items: center; gap: 12px; }
+  .logo-container { 
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+  }
   .logo {
-    width: 50px; height: 50px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 12px; display: flex; align-items: center; justify-content: center;
-    color: white; font-size: 24px; font-weight: bold;
+    width: 48px; 
+    height: 48px; 
+    background: #4169e1;
+    border-radius: 10px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    color: white; 
+    font-size: 28px; 
+    font-weight: bold;
   }
-  .logo-text h1 { font-size: 24px; color: #2d3748; margin-bottom: 2px; }
-  .logo-text p { font-size: 14px; color: #718096; }
-  .status { display: flex; align-items: center; gap: 8px; color: #48bb78; font-size: 14px; font-weight: 500; }
-  .status-dot { width: 8px; height: 8px; background: #48bb78; border-radius: 50%; animation: pulse 2s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1;}50%{opacity:0.5;} }
-  .container { max-width: 1200px; margin: 0 auto; padding: 60px 20px; }
-  .title-section { background: white; border-radius: 20px; padding: 40px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 50px; }
-  .title-section h1 { font-size: 32px; color: #2d3748; margin-bottom: 12px; }
-  .title-section p { font-size: 16px; color: #718096; }
-  #categories { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; margin-top: 30px; }
+  .logo-text h1 { 
+    font-size: 22px; 
+    color: #1a202c; 
+    margin-bottom: 0; 
+    font-weight: 600;
+  }
+  .logo-text p { 
+    font-size: 13px; 
+    color: #718096; 
+    margin-top: 2px;
+  }
+  .status { 
+    display: flex; 
+    align-items: center; 
+    gap: 8px; 
+    color: #48bb78; 
+    font-size: 14px; 
+    font-weight: 500; 
+  }
+  .status-dot { 
+    width: 8px; 
+    height: 8px; 
+    background: #48bb78; 
+    border-radius: 50%; 
+    animation: pulse 2s infinite; 
+  }
+  @keyframes pulse { 
+    0%,100%{opacity:1;}
+    50%{opacity:0.5;} 
+  }
+  .container { 
+    max-width: 1400px; 
+    margin: 0 auto; 
+    padding: 60px 40px; 
+  }
+  .title-section { 
+    text-align: center; 
+    margin-bottom: 60px; 
+  }
+  .title-section h1 { 
+    font-size: 36px; 
+    color: #1a202c; 
+    margin-bottom: 12px; 
+    font-weight: 700;
+  }
+  .title-section p { 
+    font-size: 18px; 
+    color: #718096; 
+    font-weight: 400;
+  }
+  #categories { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); 
+    gap: 32px; 
+    margin-top: 30px; 
+  }
   .category-card {
-    background: white; border-radius: 20px; padding: 40px 30px; cursor: pointer;
-    transition: all 0.3s ease; box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    display: flex; flex-direction: column; align-items: center; text-align: center;
+    background: white; 
+    border-radius: 16px; 
+    padding: 48px 32px; 
+    cursor: pointer;
+    transition: all 0.3s ease; 
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    text-align: center;
+    border: 1px solid #e2e8f0;
   }
-  .category-card:hover { transform: translateY(-8px); box-shadow: 0 12px 40px rgba(0,0,0,0.15); }
-  .icon-circle { width: 120px; height: 120px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; font-size: 48px; transition: all 0.3s ease; }
-  .category-card:hover .icon-circle { transform: scale(1.1); }
-  .category-card h3 { font-size: 22px; color: #2d3748; margin-bottom: 12px; }
-  .category-card p { font-size: 14px; color: #718096; line-height: 1.6; margin-bottom: 24px; }
-  .find-doctors-btn { width: 100%; padding: 14px 28px; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; color: white; cursor: pointer; transition: all 0.3s ease; }
-  .find-doctors-btn:hover { transform: scale(1.02); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
-  .category-card:nth-child(3n+1) .icon-circle { background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3); }
-  .category-card:nth-child(3n+1) .find-doctors-btn { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
-  .category-card:nth-child(3n+2) .icon-circle { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); box-shadow: 0 8px 24px rgba(59, 130, 246, 0.3); }
-  .category-card:nth-child(3n+2) .find-doctors-btn { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); }
-  .category-card:nth-child(3n+3) .icon-circle { background: linear-gradient(135deg, #ec4899 0%, #ef4444 100%); box-shadow: 0 8px 24px rgba(236, 72, 153, 0.3); }
-  .category-card:nth-child(3n+3) .find-doctors-btn { background: linear-gradient(135deg, #ec4899 0%, #ef4444 100%); }
-  .loading { text-align: center; padding: 60px; color: #718096; font-size: 18px; }
-  .error { background: #fee; border: 1px solid #fcc; color: #c33; padding: 20px; border-radius: 12px; text-align: center; }
-  @media (max-width: 768px) { .header { padding: 15px 20px; } .title-section { padding: 30px 20px; } .title-section h1 { font-size: 24px; } #categories { grid-template-columns: 1fr; gap: 20px; } }
+  .category-card:hover { 
+    transform: translateY(-4px); 
+    box-shadow: 0 12px 24px rgba(0,0,0,0.12); 
+  }
+  .icon-circle { 
+    width: 96px; 
+    height: 96px; 
+    border-radius: 16px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    margin-bottom: 24px; 
+    font-size: 48px; 
+    transition: all 0.3s ease; 
+  }
+  .category-card:hover .icon-circle { 
+    transform: scale(1.05); 
+  }
+  .category-card h3 { 
+    font-size: 22px; 
+    color: #1a202c; 
+    margin-bottom: 8px; 
+    font-weight: 600;
+  }
+  .category-card p { 
+    font-size: 15px; 
+    color: #718096; 
+    line-height: 1.6; 
+    margin-bottom: 24px; 
+  }
+  .find-doctors-btn { 
+    width: auto;
+    padding: 12px 24px; 
+    border: none; 
+    border-radius: 8px; 
+    font-size: 15px; 
+    font-weight: 600; 
+    color: white; 
+    cursor: pointer; 
+    transition: all 0.2s ease; 
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .find-doctors-btn::after {
+    content: '→';
+    font-size: 18px;
+  }
+  .find-doctors-btn:hover { 
+    transform: translateX(4px); 
+  }
+  
+  /* Blue theme for first card */
+  .category-card:nth-child(3n+1) .icon-circle { 
+    background: #dbe4ff;
+    color: #4169e1;
+  }
+  .category-card:nth-child(3n+1) .find-doctors-btn { 
+    background: #4169e1;
+  }
+  .category-card:nth-child(3n+1) .find-doctors-btn:hover { 
+    background: #3557c7;
+  }
+  
+  /* Teal theme for second card */
+  .category-card:nth-child(3n+2) .icon-circle { 
+    background: #d1f4e8;
+    color: #0d9488;
+  }
+  .category-card:nth-child(3n+2) .find-doctors-btn { 
+    background: #0d9488;
+  }
+  .category-card:nth-child(3n+2) .find-doctors-btn:hover { 
+    background: #0a7c72;
+  }
+  
+  /* Purple theme for third card */
+  .category-card:nth-child(3n+3) .icon-circle { 
+    background: #e9d5ff;
+    color: #7c3aed;
+  }
+  .category-card:nth-child(3n+3) .find-doctors-btn { 
+    background: #7c3aed;
+  }
+  .category-card:nth-child(3n+3) .find-doctors-btn:hover { 
+    background: #6d28d9;
+  }
+  
+  .loading { 
+    text-align: center; 
+    padding: 60px; 
+    color: #718096; 
+    font-size: 18px; 
+  }
+  .error { 
+    background: #fee; 
+    border: 1px solid #fcc; 
+    color: #c33; 
+    padding: 20px; 
+    border-radius: 12px; 
+    text-align: center; 
+  }
+  
+  .cancel-section {
+    text-align: center; 
+    margin-top: 60px;
+  }
+  
+  .cancel-btn {
+    padding: 14px 32px; 
+    font-size: 16px; 
+    font-weight: 600;
+    background: #ef4444;
+    color: white; 
+    border: none; 
+    border-radius: 8px; 
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  
+  .cancel-btn:hover {
+    background: #dc2626;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  }
+  
+  /* How It Works Section */
+  .how-it-works {
+    background: white;
+    border-radius: 20px;
+    padding: 60px 40px;
+    margin-top: 80px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  
+  .how-it-works-title {
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  
+  .how-it-works-title h2 {
+    font-size: 32px;
+    color: #1a202c;
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
+  
+  .how-it-works-subtitle {
+    text-align: center;
+    font-size: 16px;
+    color: #718096;
+    margin-bottom: 50px;
+  }
+  
+  .steps-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    position: relative;
+  }
+  
+  .step-card {
+    background: #f8f9fc;
+    border-radius: 16px;
+    padding: 32px 24px;
+    text-align: center;
+    position: relative;
+  }
+  
+  .step-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    color: white;
+    font-size: 28px;
+  }
+  
+  .step-card:nth-child(1) .step-icon {
+    background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+  }
+  
+  .step-card:nth-child(2) .step-icon {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  }
+  
+  .step-card:nth-child(3) .step-icon {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  }
+  
+  .step-card:nth-child(4) .step-icon {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  }
+  
+  .step-number {
+    font-size: 13px;
+    color: #718096;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  
+  .step-title {
+    font-size: 18px;
+    color: #1a202c;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  
+  .step-description {
+    font-size: 14px;
+    color: #718096;
+    line-height: 1.6;
+  }
+  
+  .step-arrow {
+    position: absolute;
+    right: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #cbd5e0;
+    font-size: 24px;
+    z-index: 1;
+  }
+  
+  .step-card:last-child .step-arrow {
+    display: none;
+  }
+  
+  @media (max-width: 768px) { 
+    .header { 
+      padding: 15px 20px; 
+    } 
+    .container {
+      padding: 40px 20px;
+    }
+    .title-section { 
+      padding: 0; 
+      margin-bottom: 40px;
+    } 
+    .title-section h1 { 
+      font-size: 28px; 
+    }
+    .title-section p {
+      font-size: 16px;
+    }
+    #categories { 
+      grid-template-columns: 1fr; 
+      gap: 20px; 
+    }
+    .category-card {
+      padding: 40px 24px;
+    }
+    
+    .how-it-works {
+      padding: 40px 24px;
+      margin-top: 60px;
+    }
+    
+    .how-it-works-title h2 {
+      font-size: 24px;
+    }
+    
+    .steps-container {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+    
+    .step-arrow {
+      display: none;
+    }
+  }
 </style>
 </head>
 <body>
 
 <div class="header">
   <div class="logo-container">
-    <div class="logo">❤️</div>
+    <div class="logo">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M10 2H14V10H22V14H14V22H10V14H2V10H10V2Z" fill="currentColor"/>
+      </svg>
+    </div>
     <div class="logo-text">
-      <h1>HealthCare</h1>
+      <h1>MediBook</h1>
       <p>Book Your Appointment</p>
     </div>
   </div>
@@ -72,8 +406,8 @@
 
 <div class="container">
   <div class="title-section">
-    <h1>Choose a Medical Specialty</h1>
-    <p>Select a specialty to find the right healthcare professional for your needs</p>
+    <h1>What kind of appointment do you need?</h1>
+    <p>Choose a specialty to view available doctors and schedules.</p>
   </div>
 
   <div id="categories">
@@ -81,27 +415,117 @@
   </div>
 
   <!-- Cancel Appointment Button -->
-  <div style="text-align:center; margin-top:40px;">
+  <div class="cancel-section">
     <button 
+      class="cancel-btn"
       onclick="window.location.href='/cancel_appointment_page'"
-      style="
-        padding:14px 28px; font-size:16px; font-weight:600;
-        background: linear-gradient(135deg, #ec4899 0%, #ef4444 100%);
-        color:white; border:none; border-radius:12px; cursor:pointer;
-        transition:0.3s;"
-      onmouseover="this.style.transform='scale(1.05)';"
-      onmouseout="this.style.transform='scale(1)';"
     >Cancel Appointment</button>
+  </div>
+  
+  <!-- How It Works Section -->
+  <div class="how-it-works">
+    <div class="how-it-works-title">
+      <h2>How It Works</h2>
+    </div>
+    <p class="how-it-works-subtitle">Book your appointment in 4 simple steps</p>
+    
+    <div class="steps-container">
+      <div class="step-card">
+        <div class="step-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M11 2V6M11 6C9.89543 6 9 6.89543 9 8V12C9 15.866 12.134 19 16 19C19.866 19 23 15.866 23 12V8C23 6.89543 22.1046 6 21 6M11 6H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="16" cy="12" r="2" stroke="currentColor" stroke-width="2"/>
+          </svg>
+        </div>
+        <div class="step-number">Step 1</div>
+        <div class="step-title">Choose Specialty</div>
+        <p class="step-description">Select the medical specialty you need</p>
+        <div class="step-arrow">→</div>
+      </div>
+      
+      <div class="step-card">
+        <div class="step-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/>
+            <path d="M6 21C6 17.134 8.68629 14 12 14C15.3137 14 18 17.134 18 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="step-number">Step 2</div>
+        <div class="step-title">Select Doctor</div>
+        <p class="step-description">Browse and choose your preferred doctor</p>
+        <div class="step-arrow">→</div>
+      </div>
+      
+      <div class="step-card">
+        <div class="step-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="3" y="6" width="18" height="15" rx="2" stroke="currentColor" stroke-width="2"/>
+            <path d="M3 10H21" stroke="currentColor" stroke-width="2"/>
+            <path d="M8 3V6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M16 3V6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="step-number">Step 3</div>
+        <div class="step-title">Pick Date & Time</div>
+        <p class="step-description">Schedule at your convenient time</p>
+        <div class="step-arrow">→</div>
+      </div>
+      
+      <div class="step-card">
+        <div class="step-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+            <path d="M8 12L11 15L16 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="step-number">Step 4</div>
+        <div class="step-title">Confirm Booking</div>
+        <p class="step-description">Fill details and confirm appointment</p>
+      </div>
+    </div>
   </div>
 </div>
 
 <script>
-const iconMap = { general:'🩺', dentistry:'😊', neurology:'🧠', cardiology:'❤️', pediatrics:'👶',
-                  orthopedics:'🦴', dermatology:'✨', ophthalmology:'👁️', psychiatry:'🧘', surgery:'⚕️' };
+// SVG Icons
+const svgIcons = {
+  stethoscope: `<svg width="56" height="56" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 6C10 4.89543 10.8954 4 12 4C13.1046 4 14 4.89543 14 6V8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M18 6C18 4.89543 18.8954 4 20 4C21.1046 4 22 4.89543 22 6V8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M10 8C10 8 10 10 10 12C10 16.4183 13.5817 20 18 20H20C22.7614 20 25 17.7614 25 15C25 12.2386 22.7614 10 20 10C17.2386 10 15 12.2386 15 15" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M22 8C22 8 22 10 22 12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="20" cy="15" r="2" stroke="currentColor" stroke-width="2.5"/>
+    <path d="M8 20C8 23.3137 10.6863 26 14 26C17.3137 26 20 23.3137 20 20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="8" cy="20" r="2.5" stroke="currentColor" stroke-width="2.5"/>
+  </svg>`,
+  smile: `<svg width="56" height="56" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+    <path d="M8 14C8 14 9.5 16 12 16C14.5 16 16 14 16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="9" cy="9" r="1.5" fill="currentColor"/>
+    <circle cx="15" cy="9" r="1.5" fill="currentColor"/>
+  </svg>`,
+  baby: `<svg width="56" height="56" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="16" cy="12" r="5" stroke="currentColor" stroke-width="2.5"/>
+    <circle cx="14" cy="11.5" r="1.2" fill="currentColor"/>
+    <circle cx="18" cy="11.5" r="1.2" fill="currentColor"/>
+    <path d="M13.5 14.5C13.5 14.5 14.5 15.5 16 15.5C17.5 15.5 18.5 14.5 18.5 14.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    <path d="M8 26C8 21.0294 11.5817 17 16 17C20.4183 17 24 21.0294 24 26" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M12 8C12 8 13 6 16 6C19 6 20 8 20 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  </svg>`
+};
 
 function getIcon(categoryName){
-    const name=categoryName.toLowerCase();
-    for(const [key,icon] of Object.entries(iconMap)){ if(name.includes(key)) return icon; }
+    const name = categoryName.toLowerCase();
+    if(name.includes('general') || name.includes('physician')) return svgIcons.stethoscope;
+    if(name.includes('dent')) return svgIcons.smile;
+    if(name.includes('pediat')) return svgIcons.baby;
+    if(name.includes('cardio')) return '❤️';
+    if(name.includes('neuro')) return '🧠';
+    if(name.includes('ortho')) return '🦴';
+    if(name.includes('derma')) return '✨';
+    if(name.includes('ophthal')) return '👁️';
+    if(name.includes('psychiatr')) return '🧘';
+    if(name.includes('surgery')) return '⚕️';
     return '🏥';
 }
 
@@ -117,8 +541,9 @@ async function loadCategories(){
             const div=document.createElement("div");
             div.className="category-card";
             const icon=getIcon(cat.category_name);
+            const isSVG = icon.includes('<svg');
             div.innerHTML=`
-                <div class="icon-circle">${icon}</div>
+                <div class="icon-circle">${isSVG ? icon : `<span style="font-size: 48px;">${icon}</span>`}</div>
                 <h3>${cat.category_name}</h3>
                 <p>${cat.description || 'Find qualified healthcare professionals in this specialty'}</p>
                 <button class="find-doctors-btn">Find Doctors</button>

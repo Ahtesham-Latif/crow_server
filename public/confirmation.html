@@ -6,71 +6,407 @@
     <title>HealthCare - Appointment Confirmed</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-            min-height: 100vh; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f8f9fc;
+            min-height: 100vh;
+        }
+        
+        /* Header - Same as other pages */
+        .header {
+            background: white; 
+            padding: 20px 40px; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            margin-bottom: 0;
+        }
+        .logo-container { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+        }
+        .logo {
+            width: 48px; 
+            height: 48px; 
+            background: #4169e1;
+            border-radius: 10px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            color: white; 
+            font-size: 28px; 
+            font-weight: bold;
+        }
+        .logo-text h1 { 
+            font-size: 22px; 
+            color: #1a202c; 
+            margin-bottom: 0; 
+            font-weight: 600;
+        }
+        .logo-text p { 
+            font-size: 13px; 
+            color: #718096; 
+            margin-top: 2px;
+        }
+        .status { 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            color: #48bb78; 
+            font-size: 14px; 
+            font-weight: 500; 
+        }
+        .status-dot { 
+            width: 8px; 
+            height: 8px; 
+            background: #48bb78; 
+            border-radius: 50%; 
+            animation: pulse 2s infinite; 
+        }
+        @keyframes pulse { 
+            0%,100%{opacity:1;}
+            50%{opacity:0.5;} 
+        }
+        
+        /* Main Container */
+        .confirmation-container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 60px 40px;
+        }
+        
+        /* Success Icon */
+        .success-icon-wrapper {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        
+        .checkmark-circle { 
+            width: 96px; 
+            height: 96px; 
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-radius: 50%; 
+            margin: 0 auto 24px; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            padding: 20px; 
+            font-size: 48px; 
+            color: white; 
+            box-shadow: 0 12px 40px rgba(16, 185, 129, 0.3);
+            animation: pop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .confirmation-container { max-width: 600px; width: 100%; text-align: center; }
-        .checkmark-circle { 
-            width: 80px; height: 80px; background: white; border-radius: 50%; 
-            margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; 
-            font-size: 40px; color: #48bb78; box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
-            animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        
+        @keyframes pop { 
+            from { transform: scale(0) rotate(-180deg); opacity: 0; } 
+            to { transform: scale(1) rotate(0deg); opacity: 1; } 
         }
-        @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
         
-        .card { background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); overflow: hidden; text-align: left; }
-        .card-header { background: #48bb78; padding: 25px; color: white; display: flex; align-items: center; gap: 15px; }
-        .card-body { padding: 30px; }
+        .success-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 8px;
+        }
         
-        /* Dual ID Section */
-        .id-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .success-subtitle {
+            font-size: 16px;
+            color: #718096;
+        }
+        
+        /* Card */
+        .card { 
+            background: white; 
+            border-radius: 16px; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+        }
+        
+        .card-header { 
+            background: linear-gradient(135deg, #4169e1 0%, #3557c7 100%);
+            padding: 32px; 
+            color: white;
+        }
+        
+        .card-header-content {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .card-header-icon {
+            width: 56px;
+            height: 56px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+        
+        .card-header-text h3 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        
+        .card-header-text p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .card-body { 
+            padding: 32px;
+        }
+        
+        /* ID Section */
+        .id-container { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 16px; 
+            margin-bottom: 32px;
+            padding-bottom: 32px;
+            border-bottom: 2px dashed #e2e8f0;
+        }
+        
         .id-box { 
-            background: #f7fafc; padding: 15px; border-radius: 12px; 
-            text-align: center; border: 2px dashed #e2e8f0; 
+            background: #f8f9fc;
+            padding: 20px; 
+            border-radius: 12px; 
+            text-align: center;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
         }
-        .id-label { font-size: 11px; color: #718096; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
-        .id-value { font-size: 22px; font-weight: 800; color: #667eea; }
         
-        .detail-item { display: flex; gap: 15px; padding: 12px; background: #f8fafc; border-radius: 12px; margin-bottom: 10px; border: 1px solid #edf2f7; }
-        .detail-icon { font-size: 20px; display: flex; align-items: center; }
-        .detail-label { font-size: 10px; color: #a0aec0; text-transform: uppercase; font-weight: 700; }
-        .detail-value { font-size: 16px; color: #2d3748; font-weight: 600; }
+        .id-box:hover {
+            border-color: #4169e1;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(65, 105, 225, 0.1);
+        }
         
-        .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 25px; }
+        .id-label { 
+            font-size: 11px; 
+            color: #718096; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px; 
+            margin-bottom: 8px;
+        }
+        
+        .id-value { 
+            font-size: 24px; 
+            font-weight: 800; 
+            color: #4169e1;
+            font-family: 'Courier New', monospace;
+        }
+        
+        /* Detail Items */
+        .details-section {
+            margin-bottom: 24px;
+        }
+        
+        .detail-item { 
+            display: flex; 
+            gap: 16px; 
+            padding: 16px; 
+            background: #f8f9fc;
+            border-radius: 12px; 
+            margin-bottom: 12px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s ease;
+        }
+        
+        .detail-item:hover {
+            background: #f0f4ff;
+            border-color: #cbd5e0;
+        }
+        
+        .detail-icon { 
+            width: 44px;
+            height: 44px;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .detail-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .detail-label { 
+            font-size: 11px; 
+            color: #718096;
+            text-transform: uppercase; 
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        
+        .detail-value { 
+            font-size: 16px; 
+            color: #1a202c;
+            font-weight: 600;
+        }
+        
+        /* Info Banner */
+        .info-banner {
+            background: #fef3c7;
+            border: 1px solid #fbbf24;
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            margin-bottom: 24px;
+        }
+        
+        .info-icon {
+            color: #d97706;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        
+        .info-text {
+            color: #92400e;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .info-text strong {
+            font-weight: 700;
+        }
+        
+        /* Actions */
+        .actions { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 16px;
+        }
+        
         .btn { 
-            padding: 14px; border-radius: 10px; font-weight: 700; 
-            text-align: center; text-decoration: none; cursor: pointer; border: none; 
-            transition: 0.2s; font-size: 14px;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 15px;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
-        .btn-primary { background: #667eea; color: white; }
-        .btn-secondary { background: #edf2f7; color: #4a5568; }
-        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        
+        .btn-primary { 
+            background: #1a202c;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2d3748;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(26, 32, 44, 0.2);
+        }
+        
+        .btn-secondary { 
+            background: white;
+            color: #4a5568;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .btn-secondary:hover {
+            background: #f8f9fc;
+            border-color: #cbd5e0;
+            transform: translateY(-2px);
+        }
 
-        @media (max-width: 480px) { .id-container, .actions { grid-template-columns: 1fr; } }
+        /* Responsive */
+        @media (max-width: 768px) { 
+            .header {
+                padding: 15px 20px;
+            }
+            
+            .confirmation-container {
+                padding: 40px 20px;
+            }
+            
+            .checkmark-circle {
+                width: 80px;
+                height: 80px;
+                font-size: 40px;
+            }
+            
+            .success-title {
+                font-size: 26px;
+            }
+            
+            .card-header {
+                padding: 24px;
+            }
+            
+            .card-body {
+                padding: 24px;
+            }
+            
+            .id-container, 
+            .actions { 
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
+    <div class="header">
+        <div class="logo-container">
+            <div class="logo">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 2H14V10H22V14H14V22H10V14H2V10H10V2Z" fill="currentColor"/>
+                </svg>
+            </div>
+            <div class="logo-text">
+                <h1>MediBook</h1>
+                <p>Book Your Appointment</p>
+            </div>
+        </div>
+        <div class="status">
+            <span class="status-dot"></span>
+            24/7 Available
+        </div>
+    </div>
+
     <div class="confirmation-container">
-        <div class="checkmark-circle">✓</div>
-        <h1 style="color: white; margin-bottom: 5px; font-size: 28px;">Booking Confirmed!</h1>
-        <p style="color: rgba(255,255,255,0.9); margin-bottom: 25px;">Your appointment has been successfully scheduled.</p>
+        <div class="success-icon-wrapper">
+            <div class="checkmark-circle">✓</div>
+            <h1 class="success-title">Booking Confirmed!</h1>
+            <p class="success-subtitle">Your appointment has been successfully scheduled</p>
+        </div>
 
         <div class="card">
             <div class="card-header">
-                <span style="font-size: 28px;">📋</span>
-                <div>
-                    <h3 style="font-size: 18px;">Appointment Summary</h3>
-                    <p style="font-size: 12px; opacity: 0.9;">Please save these details for your visit</p>
+                <div class="card-header-content">
+                    <div class="card-header-icon">📋</div>
+                    <div class="card-header-text">
+                        <h3>Appointment Summary</h3>
+                        <p>Please save these details for your visit</p>
+                    </div>
                 </div>
             </div>
+            
             <div class="card-body">
-                
                 <div class="id-container">
                     <div class="id-box">
                         <div class="id-label">Appointment ID</div>
@@ -82,26 +418,40 @@
                     </div>
                 </div>
 
-                <div class="detail-item">
-                    <div class="detail-icon">👤</div>
-                    <div><div class="detail-label">Patient Name</div><div class="detail-value" id="disp_patient">Loading...</div></div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-icon">👨‍⚕️</div>
-                    <div><div class="detail-label">Assigned Doctor</div><div class="detail-value" id="disp_doctor">Loading...</div></div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-icon">📅</div>
-                    <div><div class="detail-label">Date & Time</div><div class="detail-value" id="disp_datetime">Loading...</div></div>
+                <div class="details-section">
+                    <div class="detail-item">
+                        <div class="detail-icon">👤</div>
+                        <div class="detail-content">
+                            <div class="detail-label">Patient Name</div>
+                            <div class="detail-value" id="disp_patient">Loading...</div>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-icon">👨‍⚕️</div>
+                        <div class="detail-content">
+                            <div class="detail-label">Assigned Doctor</div>
+                            <div class="detail-value" id="disp_doctor">Loading...</div>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-icon">📅</div>
+                        <div class="detail-content">
+                            <div class="detail-label">Date & Time</div>
+                            <div class="detail-value" id="disp_datetime">Loading...</div>
+                        </div>
+                    </div>
                 </div>
 
-                <div style="background: #fff5f5; padding: 12px; border-radius: 8px; color: #c53030; font-size: 12px; margin-top: 15px;">
-                    <strong>Note:</strong> Bring your <strong>Patient ID</strong> for a faster check-in process at the clinic.
+                <div class="info-banner">
+                    <span class="info-icon">ℹ️</span>
+                    <div class="info-text">
+                        <strong>Important:</strong> Please bring your <strong>Patient ID</strong> for a faster check-in process at the clinic.
+                    </div>
                 </div>
 
                 <div class="actions">
-                    <a href="/categories_page" class="btn btn-secondary">Book Another</a>
-                    <button onclick="window.print()" class="btn btn-primary">Download Receipt</button>
+                    <a href="/categories_page" class="btn btn-secondary">📅 Book Another</a>
+                    <button onclick="window.print()" class="btn btn-primary">🖨️ Download Receipt</button>
                 </div>
             </div>
         </div>
@@ -126,7 +476,7 @@
         let formattedDate = dateStr;
         
         if (dateStr) {
-            const dateObj = new Date(dateStr);
+            const dateObj = new Date(dateStr + 'T00:00:00');
             if (!isNaN(dateObj.getTime())) {
                 formattedDate = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
             }

@@ -6,91 +6,586 @@
 <title>Doctor Schedule</title>
 
 <style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: #f0f2f5;
-    padding: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: #f8f9fc;
+    min-height: 100vh;
 }
-.container {
-    max-width: 600px;
-    margin: auto;
-    background: white;
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+
+/* Header - Same as doctor page */
+.header {
+    background: white; 
+    padding: 20px 40px; 
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    margin-bottom: 0;
 }
-h2 {
-    text-align: center;
-    color: #2d3748;
-    margin-bottom: 20px;
+.logo-container { 
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
 }
-.info {
+.logo {
+    width: 48px; 
+    height: 48px; 
+    background: #4169e1;
+    border-radius: 10px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    color: white; 
+    font-size: 28px; 
+    font-weight: bold;
+}
+.logo-text h1 { 
+    font-size: 22px; 
+    color: #1a202c; 
+    margin-bottom: 0; 
     font-weight: 600;
-    color: #4a5568;
-    margin-bottom: 20px;
 }
-.info span {
+.logo-text p { 
+    font-size: 13px; 
+    color: #718096; 
+    margin-top: 2px;
+}
+.status { 
+    display: flex; 
+    align-items: center; 
+    gap: 8px; 
+    color: #48bb78; 
+    font-size: 14px; 
+    font-weight: 500; 
+}
+.status-dot { 
+    width: 8px; 
+    height: 8px; 
+    background: #48bb78; 
+    border-radius: 50%; 
+    animation: pulse 2s infinite; 
+}
+@keyframes pulse { 
+    0%,100%{opacity:1;}
+    50%{opacity:0.5;} 
+}
+
+/* Page Header */
+.page-header {
+    background: white;
+    padding: 30px 40px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.back-button {
+    background: none;
+    border: none;
+    color: #4a5568;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 8px;
+    margin-bottom: 16px;
+    display: inline-flex;
+    align-items: center;
+    transition: all 0.2s;
+}
+
+.back-button:hover {
     color: #2d3748;
+    transform: translateX(-4px);
+}
+
+.page-title {
+    font-size: 32px;
+    color: #1a202c;
     font-weight: 700;
 }
-label {
-    font-weight: 600;
-    color: #4a5568;
-    display: block;
-    margin-bottom: 8px;
+
+/* Main Container */
+.main-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 40px;
+    display: grid;
+    grid-template-columns: 440px 1fr;
+    gap: 40px;
+    align-items: start;
 }
-input {
+
+/* Left Panel */
+.left-panel {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    border: 1px solid #e2e8f0;
+}
+
+/* Doctor Info Card */
+.doctor-card {
+    display: flex;
+    gap: 16px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 24px;
+}
+
+.doctor-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 12px;
+    background: #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    flex-shrink: 0;
+}
+
+.doctor-avatar svg {
     width: 100%;
-    padding: 12px;
-    font-size: 16px;
-    border-radius: 10px;
-    border: 2px solid #e2e8f0;
+    height: 100%;
+}
+
+.doctor-details {
+    flex: 1;
+}
+
+.doctor-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a202c;
+    margin-bottom: 4px;
+}
+
+.doctor-specialty {
+    font-size: 14px;
+    color: #4169e1;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.doctor-stats {
+    display: flex;
+    gap: 12px;
+    font-size: 13px;
+    color: #718096;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.star-icon {
+    color: #fbbf24;
+}
+
+/* Calendar Section */
+.calendar-section {
+    margin-top: 24px;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     margin-bottom: 20px;
 }
+
+.section-icon {
+    color: #4169e1;
+    font-size: 20px;
+}
+
+.section-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1a202c;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Calendar */
+.calendar {
+    background: white;
+    border-radius: 12px;
+    padding: 0;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding: 0 4px;
+}
+
+.calendar-month {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a202c;
+}
+
+.calendar-nav {
+    background: none;
+    border: none;
+    color: #4a5568;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 4px 8px;
+    transition: all 0.2s;
+    line-height: 1;
+}
+
+.calendar-nav:hover {
+    color: #2d3748;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0;
+}
+
+.calendar-day-header {
+    text-align: center;
+    font-size: 13px;
+    color: #9ca3af;
+    font-weight: 500;
+    padding: 12px 0;
+}
+
+.calendar-days-container {
+    display: contents;
+}
+
+.calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    color: #1a202c;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: transparent;
+    font-weight: 500;
+    margin: 2px;
+}
+
+.calendar-empty {
+    aspect-ratio: 1;
+}
+
+.calendar-day:hover:not(.calendar-day-disabled):not(.calendar-day-selected) {
+    background: #f3f4f6;
+}
+
+.calendar-day-disabled {
+    color: #d1d5db;
+    cursor: not-allowed;
+    background: transparent;
+}
+
+.calendar-day-selected {
+    background: #4169e1;
+    color: white;
+    font-weight: 600;
+}
+
+.calendar-day-today {
+    position: relative;
+}
+
+.calendar-day-today:not(.calendar-day-selected)::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    background: #4169e1;
+    border-radius: 50%;
+}
+
+/* Right Panel - Slots */
+.slots-panel {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    border: 1px solid #e2e8f0;
+}
+
+.slots-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+.slots-header-icon {
+    color: #4169e1;
+    font-size: 24px;
+}
+
+.slots-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a202c;
+}
+
+.slots-date {
+    font-weight: 400;
+    color: #718096;
+}
+
+/* Slots Grid */
 .slots-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
 }
+
 .slot {
-    padding: 12px;
+    padding: 16px;
     text-align: center;
     border: 2px solid #e2e8f0;
-    border-radius: 10px;
+    border-radius: 12px;
     cursor: pointer;
     font-weight: 600;
+    font-size: 15px;
     background: white;
-    transition: 0.3s;
+    color: #1a202c;
+    transition: all 0.2s;
 }
+
 .slot:hover {
-    border-color: #667eea;
-    background: #f7fafc;
+    border-color: #4169e1;
+    background: #f0f4ff;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102,126,234,0.2);
+    box-shadow: 0 4px 12px rgba(65, 105, 225, 0.15);
 }
-.alert {
-    margin-top: 15px;
+
+.slot-unavailable {
+    background: #f8f9fc;
+    color: #cbd5e0;
+    border-color: #e2e8f0;
+    cursor: not-allowed;
+    text-decoration: line-through;
+}
+
+.slot-unavailable:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: #e2e8f0;
+    background: #f8f9fc;
+}
+
+/* Info Banner */
+.info-banner {
+    background: #fef3c7;
+    border: 1px solid #fbbf24;
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.info-icon {
+    color: #d97706;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.info-text {
+    color: #92400e;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #718096;
+}
+
+.empty-state-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.empty-state-text {
+    font-size: 16px;
     font-weight: 600;
-    color: #e53e3e;
+}
+
+/* Alert */
+.alert {
+    margin-top: 20px;
+    padding: 16px;
+    background: #fee;
+    border: 1px solid #fcc;
+    color: #c33;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .main-container {
+        grid-template-columns: 1fr;
+        padding: 30px 20px;
+        gap: 30px;
+    }
+    
+    .left-panel, .slots-panel {
+        padding: 24px;
+    }
+}
+
+@media (max-width: 768px) {
+    .header {
+        padding: 15px 20px;
+    }
+    
+    .page-header {
+        padding: 20px;
+    }
+    
+    .page-title {
+        font-size: 24px;
+    }
+    
+    .main-container {
+        padding: 20px;
+        gap: 20px;
+    }
+    
+    .slots-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 10px;
+    }
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
-    <h2>📅 Select Appointment Slot</h2>
-
-    <div class="info">
-        Category: <span id="categoryName"></span><br>
-        Doctor: <span id="doctorName"></span>
+<div class="header">
+    <div class="logo-container">
+        <div class="logo">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 2H14V10H22V14H14V22H10V14H2V10H10V2Z" fill="currentColor"/>
+            </svg>
+        </div>
+        <div class="logo-text">
+            <h1>MediBook</h1>
+            <p>Book Your Appointment</p>
+        </div>
     </div>
+    <div class="status">
+        <span class="status-dot"></span>
+        24/7 Available
+    </div>
+</div>
 
-    <label for="appointmentDate">Select Date</label>
-    <input type="date" id="appointmentDate">
+<div class="page-header">
+    <button class="back-button" onclick="history.back()">←</button>
+    <h1 class="page-title">Select Date</h1>
+</div>
 
-    <div id="slotsContainer" class="slots-grid"></div>
-    <div id="alert" class="alert"></div>
+<div class="main-container">
+    <!-- Left Panel -->
+    <div class="left-panel">
+        <!-- Doctor Info -->
+        <div class="doctor-card">
+            <div class="doctor-avatar">
+                <svg viewBox="0 0 24 24" fill="#4a5568" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="8" r="4"/>
+                    <path d="M4 20c0-4.418 3.582-8 8-8s8 3.582 8 8v1H4v-1z"/>
+                </svg>
+            </div>
+            <div class="doctor-details">
+                <div class="doctor-name" id="doctorName">Loading...</div>
+                <div class="doctor-specialty" id="categoryName">Loading...</div>
+                <div class="doctor-stats">
+                    <div class="stat-item">
+                        <span class="star-icon">⭐</span>
+                        <span id="doctorRating">4.9</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>•</span>
+                        <span id="doctorExperience">12 Years Exp.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Calendar Section -->
+        <div class="calendar-section">
+            <div class="section-header">
+                <span class="section-icon">📅</span>
+                <span class="section-title">Select Date</span>
+            </div>
+            
+            <div class="calendar">
+                <div class="calendar-header">
+                    <button class="calendar-nav" onclick="changeMonth(-1)">‹</button>
+                    <div class="calendar-month" id="calendarMonth">December 2025</div>
+                    <button class="calendar-nav" onclick="changeMonth(1)">›</button>
+                </div>
+                
+                <div class="calendar-grid">
+                    <div class="calendar-day-header">Su</div>
+                    <div class="calendar-day-header">Mo</div>
+                    <div class="calendar-day-header">Tu</div>
+                    <div class="calendar-day-header">We</div>
+                    <div class="calendar-day-header">Th</div>
+                    <div class="calendar-day-header">Fr</div>
+                    <div class="calendar-day-header">Sa</div>
+                </div>
+                <div class="calendar-grid" id="calendarDays"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Right Panel - Slots -->
+    <div class="slots-panel">
+        <div class="slots-header">
+            <span class="slots-header-icon">🕐</span>
+            <div>
+                <span class="slots-title">Available Times for </span>
+                <span class="slots-title slots-date" id="selectedDateDisplay">Select a date</span>
+            </div>
+        </div>
+        
+        <div id="slotsContainer" class="slots-grid">
+            <div class="empty-state">
+                <div class="empty-state-icon">📅</div>
+                <div class="empty-state-text">Select a date to view available time slots</div>
+            </div>
+        </div>
+        
+        <div class="info-banner">
+            <span class="info-icon">ℹ️</span>
+            <div class="info-text">
+                Please arrive 15 minutes before your scheduled appointment time to complete any necessary paperwork.
+            </div>
+        </div>
+        
+        <div id="alert" class="alert" style="display: none;"></div>
+    </div>
 </div>
 
 <script>
@@ -102,54 +597,139 @@ const categoryName = params.get("category_name");
 document.getElementById("doctorName").textContent = decodeURIComponent(doctorName);
 document.getElementById("categoryName").textContent = decodeURIComponent(categoryName);
 
-const dateInput = document.getElementById("appointmentDate");
-const slotsContainer = document.getElementById("slotsContainer");
-const alertDiv = document.getElementById("alert");
+// Calendar state
+let currentDate = new Date();
+let selectedDate = null;
 
-// Prevent past dates
-const today = new Date().toISOString().split("T")[0];
-dateInput.min = today;
-
-dateInput.addEventListener("change", async () => {
-    const selectedDate = dateInput.value;
-    slotsContainer.innerHTML = "";
-    alertDiv.textContent = "";
-
-    if (!selectedDate) return;
-
-    const day = new Date(selectedDate).getDay();
-    if (day === 0 || day === 5 || day === 6) {
-        alertDiv.textContent = "🚫 No appointments on Friday, Saturday or Sunday.";
-        dateInput.value = "";
-        return;
+// Initialize calendar
+function renderCalendar() {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    
+    // Update month display
+    const monthNames = ["January", "February", "March", "April", "May", "June",
+                       "July", "August", "September", "October", "November", "December"];
+    document.getElementById("calendarMonth").textContent = `${monthNames[month]} ${year}`;
+    
+    // Get first day of month and number of days
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    
+    // Get today's date for comparison
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Build calendar days
+    const calendarDays = document.getElementById("calendarDays");
+    calendarDays.innerHTML = "";
+    
+    // Add empty cells for days before month starts
+    for (let i = 0; i < firstDay; i++) {
+        const emptyDay = document.createElement("div");
+        emptyDay.className = "calendar-empty";
+        calendarDays.appendChild(emptyDay);
     }
+    
+    // Add days of month
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dayDate = new Date(year, month, day);
+        const dayElement = document.createElement("div");
+        dayElement.className = "calendar-day";
+        dayElement.textContent = day;
+        
+        // Check if day is in the past
+        if (dayDate < today) {
+            dayElement.classList.add("calendar-day-disabled");
+        } else {
+            // Check if Friday, Saturday, or Sunday (5, 6, 0)
+            const dayOfWeek = dayDate.getDay();
+            if (dayOfWeek === 0 || dayOfWeek === 5 || dayOfWeek === 6) {
+                dayElement.classList.add("calendar-day-disabled");
+            } else {
+                dayElement.onclick = () => selectDate(year, month, day);
+            }
+        }
+        
+        // Mark today
+        if (dayDate.toDateString() === today.toDateString()) {
+            dayElement.classList.add("calendar-day-today");
+        }
+        
+        // Mark selected date
+        if (selectedDate && dayDate.toDateString() === selectedDate.toDateString()) {
+            dayElement.classList.add("calendar-day-selected");
+        }
+        
+        calendarDays.appendChild(dayElement);
+    }
+}
+
+function changeMonth(delta) {
+    currentDate.setMonth(currentDate.getMonth() + delta);
+    renderCalendar();
+}
+
+async function selectDate(year, month, day) {
+    selectedDate = new Date(year, month, day);
+    renderCalendar();
+    
+    // Format date for display
+    const options = { weekday: 'long', month: 'short', day: 'numeric' };
+    const dateString = selectedDate.toLocaleDateString('en-US', options);
+    document.getElementById("selectedDateDisplay").textContent = dateString;
+    
+    // Format date for API (YYYY-MM-DD) - use local date components to avoid timezone issues
+    const apiDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    
+    // Load slots
+    await loadSlots(apiDate);
+}
+
+async function loadSlots(dateString) {
+    const slotsContainer = document.getElementById("slotsContainer");
+    const alertDiv = document.getElementById("alert");
+    
+    slotsContainer.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⏳</div><div class="empty-state-text">Loading available slots...</div></div>';
+    alertDiv.style.display = "none";
 
     try {
-        const res = await fetch(`/get_available_slots/${doctorId}/${selectedDate}`);
+        const res = await fetch(`/get_available_slots/${doctorId}/${dateString}`);
         if (!res.ok) throw new Error();
 
         const slots = await res.json();
 
         if (slots.length === 0) {
-            alertDiv.textContent = "📭 No available slots for this date.";
+            slotsContainer.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔭</div><div class="empty-state-text">No available slots for this date</div></div>';
             return;
         }
 
+        slotsContainer.innerHTML = "";
+        
         slots.forEach(slot => {
             const div = document.createElement("div");
             div.className = "slot";
+            
+            // Check if slot is available (you can add logic here to mark unavailable slots)
+            // For now, all fetched slots are considered available
+            const isAvailable = slot.is_available !== false; // Adjust based on your API response
+            
+            if (!isAvailable) {
+                div.classList.add("slot-unavailable");
+            }
+            
             div.textContent = slot.time_slot;
 
-            div.onclick = () => {
-                // Redirect with schedule_id included
-                window.location.href =
-                    `/appointment_page?doctor_id=${doctorId}` +
-                    `&doctor=${encodeURIComponent(doctorName)}` +
-                    `&category_name=${encodeURIComponent(categoryName)}` +
-                    `&date=${selectedDate}` +
-                    `&slot=${encodeURIComponent(slot.time_slot)}` +
-                    `&schedule_id=${slot.schedule_id}`; // <-- key fix
-            };
+            if (isAvailable) {
+                div.onclick = () => {
+                    window.location.href =
+                        `/appointment_page?doctor_id=${doctorId}` +
+                        `&doctor=${encodeURIComponent(doctorName)}` +
+                        `&category_name=${encodeURIComponent(categoryName)}` +
+                        `&date=${dateString}` +
+                        `&slot=${encodeURIComponent(slot.time_slot)}` +
+                        `&schedule_id=${slot.schedule_id}`;
+                };
+            }
 
             slotsContainer.appendChild(div);
         });
@@ -157,8 +737,13 @@ dateInput.addEventListener("change", async () => {
     } catch (err) {
         console.error(err);
         alertDiv.textContent = "❌ Failed to load slots.";
+        alertDiv.style.display = "block";
+        slotsContainer.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-text">Error loading slots</div></div>';
     }
-});
+}
+
+// Initialize calendar on load
+renderCalendar();
 </script>
 
 </body>
