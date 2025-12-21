@@ -1,101 +1,109 @@
 #include "schedule_controller.h"
-#include "../models/schedule.h"   // Doctor_Schedule model
+
+#include "../models/schedule.h"
 #include <iostream>
 #include <fstream>
+#include <sstream>
 
-void registerScheduleRoutes(crow::SimpleApp& app, sqlite3* db) {
-
-    // ---------------------------------
-    // GET available slots for a doctor on a specific date
-    // ---------------------------------
+void registerScheduleRoutes(crow::SimpleApp& app, sqlite3* db)
+{
+    // --------------------------------------------------
+    // GET: Available slots for a doctor on a given date
+    // --------------------------------------------------
     CROW_ROUTE(app, "/get_available_slots/<int>/<string>").methods("GET"_method)
-    ([db](int doctor_id, const std::string& appointmentDate) {
+    ([db](int doctor_id, const std::string& appointment_date)
+    {
+        sqlite3_stmt* stmt = nullptr;
 
-        sqlite3_stmt* stmt;
         const char* sql =
             "SELECT ds.schedule_id, ds.time_slot "
             "FROM Doctor_Schedule ds "
-            "WHERE NOT EXISTS ("
-            "    SELECT 1 FROM Appointment a "
+            "WHERE ds.schedule_id NOT IN ( "
+            "    SELECT a.schedule_id "
+            "    FROM Appointment a "
             "    WHERE a.doctor_id = ? "
-            "      AND a.schedule_id = ds.schedule_id "
-            "      AND a.appointment_date = ? "
-            "      AND a.status = 'BOOKED'"
+            "    AND a.appointment_date = ? "
             ") "
             "ORDER BY ds.time_slot;";
 
         if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
-            std::cerr << "Failed to prepare statement: " << sqlite3_errmsg(db) << std::endl;
+            std::cerr << "[ERROR] Prepare failed: " << sqlite3_errmsg(db) << std::endl;
             return crow::response(500, "Database error");
         }
 
         sqlite3_bind_int(stmt, 1, doctor_id);
-        sqlite3_bind_text(stmt, 2, appointmentDate.c_str(), -1, SQLITE_STATIC);
+        sqlite3_bind_text(stmt, 2, appointment_date.c_str(), -1, SQLITE_STATIC);
 
         crow::json::wvalue result;
-        int i = 0;
+        int index = 0;
+
         while (sqlite3_step(stmt) == SQLITE_ROW) {
-            result[i]["schedule_id"] = sqlite3_column_int(stmt, 0);
-            result[i]["time_slot"] = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
-            i++;
+            result[index]["schedule_id"] = sqlite3_column_int(stmt, 0);
+            result[index]["time_slot"] =
+                std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
+            index++;
         }
 
         sqlite3_finalize(stmt);
         return crow::response(200, result);
     });
 
-    // ---------------------------------
-    // Redirect to appointment page with prefilled data
-    // ---------------------------------
+    // --------------------------------------------------
+    // GET: Appointment page
+    // --------------------------------------------------
     CROW_ROUTE(app, "/appointment_page/<int>/<string>/<string>/<string>/<string>")
-    ([db](int doctor_id, const std::string& category_name,
-          const std::string& doctor_name, const std::string& date,
-          const std::string& slot_time) {
-
+    ([db](int doctor_id,
+          const std::string& category_name,
+          const std::string& doctor_name,
+          const std::string& date,
+          const std::string& slot_time)
+    {
         std::ifstream file("../public/appointment.html");
-        if (!file.is_open())
+        if (!file.is_open()) {
             return crow::response(404, "Appointment page not found");
+        }
 
         std::stringstream buffer;
         buffer << file.rdbuf();
         std::string html = buffer.str();
 
-        // Replace placeholders
-        size_t pos;
-        pos = html.find("{{CATEGORY_NAME}}");
-        if (pos != std::string::npos) html.replace(pos, 17, category_name);
+        auto replace = [&](const std::string& key, const std::string& value) {
+            size_t pos = html.find(key);
+            if (pos != std::string::npos) {
+                html.replace(pos, key.length(), value);
+            }
+        };
 
-        pos = html.find("{{DOCTOR_NAME}}");
-        if (pos != std::string::npos) html.replace(pos, 14, doctor_name);
+        replace("{{CATEGORY_NAME}}", category_name);
+        replace("{{DOCTOR_NAME}}", doctor_name);
+        replace("{{SLOT_DATE}}", date);
+        replace("{{SLOT_TIME}}", slot_time);
 
-        pos = html.find("{{SLOT_DATE}}");
-        if (pos != std::string::npos) html.replace(pos, 12, date);
-
-        pos = html.find("{{SLOT_TIME}}");
-        if (pos != std::string::npos) html.replace(pos, 12, slot_time);
-
-        return crow::response(html);
+        return crow::response(200, html);
     });
 
-    // ---------------------------------
-    // POST: Add new slots to Doctor_Schedule
-    // ---------------------------------
+    // --------------------------------------------------
+    // POST: Add a new slot (dev/admin)
+    // --------------------------------------------------
     CROW_ROUTE(app, "/add_slot").methods("POST"_method)
-    ([db](const crow::request& req) {
+    ([db](const crow::request& req)
+    {
         auto body = crow::json::load(req.body);
         if (!body || !body.has("time_slot")) {
             return crow::response(400, "Missing time_slot");
         }
 
-        std::string slot = body["time_slot"].s();
-        const char* sql = "INSERT INTO Doctor_Schedule(time_slot) VALUES(?)";
-        sqlite3_stmt* stmt;
+        std::string time_slot = std::string(body["time_slot"].s());
 
+        const char* sql =
+            "INSERT INTO Doctor_Schedule (time_slot) VALUES (?)";
+
+        sqlite3_stmt* stmt = nullptr;
         if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
-            return crow::response(500, "Database error");
+            return crow::response(500, sqlite3_errmsg(db));
         }
 
-        sqlite3_bind_text(stmt, 1, slot.c_str(), -1, SQLITE_STATIC);
+        sqlite3_bind_text(stmt, 1, time_slot.c_str(), -1, SQLITE_STATIC);
 
         if (sqlite3_step(stmt) != SQLITE_DONE) {
             sqlite3_finalize(stmt);
@@ -106,7 +114,7 @@ void registerScheduleRoutes(crow::SimpleApp& app, sqlite3* db) {
 
         crow::json::wvalue res;
         res["success"] = true;
-        res["message"] = "Slot added successfully!";
+        res["message"] = "Slot added successfully";
         return crow::response(200, res);
     });
 }
