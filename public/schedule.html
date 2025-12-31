@@ -506,9 +506,7 @@ body {
 </div>
 
 <div class="main-container">
-    <!-- Left Panel -->
     <div class="left-panel">
-        <!-- Doctor Info -->
         <div class="doctor-card">
             <div class="doctor-avatar">
                 <svg viewBox="0 0 24 24" fill="#4a5568" xmlns="http://www.w3.org/2000/svg">
@@ -532,7 +530,6 @@ body {
             </div>
         </div>
         
-        <!-- Calendar Section -->
         <div class="calendar-section">
             <div class="section-header">
                 <span class="section-icon">📅</span>
@@ -560,7 +557,6 @@ body {
         </div>
     </div>
     
-    <!-- Right Panel - Slots -->
     <div class="slots-panel">
         <div class="slots-header">
             <span class="slots-header-icon">🕐</span>
@@ -697,21 +693,48 @@ async function loadSlots(dateString) {
         if (!res.ok) throw new Error();
 
         const slots = await res.json();
+        
+        // --- NEW LOGIC: Filter out past slots for today ---
+        const now = new Date();
+        const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        
+        let filteredSlots = slots;
+        
+        if (dateString === todayStr) {
+            filteredSlots = slots.filter(slot => {
+                // Assuming time_slot format is "HH:MM AM/PM" or "HH:MM"
+                // Converting time string to a Date object for comparison
+                const [time, modifier] = slot.time_slot.split(' ');
+                let [hours, minutes] = time.split(':');
+                
+                if (modifier === 'PM' && hours !== '12') {
+                    hours = parseInt(hours, 10) + 12;
+                }
+                if (modifier === 'AM' && hours === '12') {
+                    hours = '00';
+                }
+                
+                const slotTime = new Date();
+                slotTime.setHours(hours, minutes, 0, 0);
+                
+                // Return true only if slot time is in the future
+                return slotTime > now;
+            });
+        }
+        // --------------------------------------------------
 
-        if (slots.length === 0) {
-            slotsContainer.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔭</div><div class="empty-state-text">No available slots for this date</div></div>';
+        if (filteredSlots.length === 0) {
+            slotsContainer.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔭</div><div class="empty-state-text">No available slots for this time</div></div>';
             return;
         }
 
         slotsContainer.innerHTML = "";
         
-        slots.forEach(slot => {
+        filteredSlots.forEach(slot => {
             const div = document.createElement("div");
             div.className = "slot";
             
-            // Check if slot is available (you can add logic here to mark unavailable slots)
-            // For now, all fetched slots are considered available
-            const isAvailable = slot.is_available !== false; // Adjust based on your API response
+            const isAvailable = slot.is_available !== false; 
             
             if (!isAvailable) {
                 div.classList.add("slot-unavailable");

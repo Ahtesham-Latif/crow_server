@@ -7,7 +7,7 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
-            font-family: -apple-system, sans-serif; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             background: #f7fafc; 
             min-height: 100vh; 
             display: flex; 
@@ -17,7 +17,7 @@
         }
         .cancel-card { 
             background: white; 
-            max-width: 450px; 
+            max-width: 500px; 
             width: 100%; 
             padding: 40px; 
             border-radius: 20px; 
@@ -28,19 +28,21 @@
         h2 { color: #2d3748; margin-bottom: 10px; font-size: 24px; }
         p { color: #718096; margin-bottom: 30px; font-size: 15px; line-height: 1.5; }
         
-        .input-group { text-align: left; margin-bottom: 20px; }
-        label { display: block; font-size: 13px; font-weight: 700; color: #4a5568; margin-bottom: 8px; text-transform: uppercase; }
+        .input-row { display: flex; gap: 15px; }
+        .input-group { text-align: left; margin-bottom: 18px; flex: 1; }
+        label { display: block; font-size: 12px; font-weight: 700; color: #4a5568; margin-bottom: 8px; text-transform: uppercase; }
         
         input { 
             width: 100%; 
-            padding: 15px; 
+            padding: 12px 15px; 
             border: 2px solid #e2e8f0; 
-            border-radius: 12px; 
-            font-size: 18px; 
-            font-weight: 600; 
-            letter-spacing: 2px;
+            border-radius: 10px; 
+            font-size: 16px; 
             transition: 0.3s;
         }
+        /* Specific styling for ID fields to make them stand out */
+        .id-input { font-weight: 600; letter-spacing: 1px; background-color: #fcfcfc; }
+        
         input:focus { outline: none; border-color: #e53e3e; box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1); }
         input::placeholder { font-weight: 400; letter-spacing: normal; font-size: 14px; color: #cbd5e0; }
 
@@ -60,10 +62,10 @@
         .btn-cancel:hover { background: #c53030; transform: translateY(-2px); }
         .btn-cancel:disabled { background: #feb2b2; cursor: not-allowed; }
 
-        .back-link { display: block; margin-top: 20px; color: #718096; text-decoration: none; font-size: 14px; }
+        .back-link { display: block; margin-top: 25px; color: #718096; text-decoration: none; font-size: 14px; }
         .back-link:hover { color: #2d3748; }
 
-        #message { margin-top: 20px; padding: 12px; border-radius: 8px; font-size: 14px; display: none; }
+        #message { margin-top: 20px; padding: 12px; border-radius: 8px; font-size: 14px; display: none; line-height: 1.4; }
         .error { background: #fff5f5; color: #c53030; border: 1px solid #feb2b2; }
         .success { background: #f0fff4; color: #2f855a; border: 1px solid #9ae6b4; }
     </style>
@@ -72,26 +74,43 @@
 
     <div class="cancel-card">
         <div class="header-icon">🗓️✖️</div>
-        <h2>Cancel Booking</h2>
-        <p>Enter your 6-digit Patient ID and Appointment ID to cancel your scheduled booking.</p>
+        <h2>Secure Cancellation</h2>
+        <p>Please provide your booking details to verify identity and update your appointment status.</p>
 
         <form id="cancelForm">
-            <div class="input-group">
-                <label>Patient ID</label>
-                <input type="text" id="patient_id" maxlength="6" pattern="\d{6}" placeholder="e.g. 123456" required>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="patient_id">Patient ID</label>
+                    <input type="number" id="patient_id" class="id-input" placeholder="ID Number" required>
+                </div>
+                <div class="input-group">
+                    <label for="appointment_id">Appt ID</label>
+                    <input type="number" id="appointment_id" class="id-input" placeholder="Booking ID" required>
+                </div>
             </div>
 
             <div class="input-group">
-                <label>Appointment ID</label>
-                <input type="text" id="appointment_id" maxlength="6" pattern="\d{6}" placeholder="e.g. 654321" required>
+                <label for="name">Full Name</label>
+                <input type="text" id="name" placeholder="As it appears on your booking" required>
             </div>
 
-            <button type="submit" class="btn-cancel" id="cancelBtn">Cancel My Appointment</button>
+            <div class="input-row">
+                <div class="input-group" style="flex: 2;">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" placeholder="email@example.com" required>
+                </div>
+                <div class="input-group" style="flex: 1;">
+                    <label for="age">Age</label>
+                    <input type="number" id="age" placeholder="Age" required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-cancel" id="cancelBtn">Confirm Cancellation</button>
         </form>
 
         <div id="message"></div>
 
-        <a href="/categories_page" class="back-link">← Return to Home</a>
+        <a href="/categories_page" class="back-link">← Return to Dashboard</a>
     </div>
 
     <script>
@@ -100,42 +119,45 @@
             
             const btn = document.getElementById('cancelBtn');
             const msgDiv = document.getElementById('message');
+            
+            // Gather values
             const pId = document.getElementById('patient_id').value;
             const aId = document.getElementById('appointment_id').value;
-
-            // Simple client-side validation
-            if (pId.length !== 6 || aId.length !== 6) {
-                showMessage("Both IDs must be exactly 6 digits.", "error");
-                return;
-            }
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const age = document.getElementById('age').value;
 
             btn.disabled = true;
-            btn.textContent = "Processing...";
+            btn.textContent = "Verifying Details...";
+            msgDiv.style.display = 'none';
 
             try {
-                // Sending to your C++ backend endpoint
                 const response = await fetch('/cancel_appointment', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         patient_id: parseInt(pId), 
-                        appointment_id: parseInt(aId) 
+                        appointment_id: parseInt(aId),
+                        name: name,
+                        email: email,
+                        age: parseInt(age)
                     })
                 });
 
                 const result = await response.json();
 
                 if (response.ok && result.success) {
-                    showMessage("✅ Appointment cancelled successfully.", "success");
+                    showMessage("✅ Verification successful. Your appointment has been marked as Cancelled.", "success");
                     document.getElementById('cancelForm').reset();
                 } else {
-                    showMessage("❌ " + (result.message || "Invalid IDs. Could not find appointment."), "error");
+                    // This will show your C++ error message (e.g., "Verification failed")
+                    showMessage("❌ " + (result.message || "Details do not match our records. Please check your IDs and info."), "error");
                 }
             } catch (err) {
-                showMessage("❌ Connection error. Please try again later.", "error");
+                showMessage("❌ Connection error. Unable to reach the server.", "error");
             } finally {
                 btn.disabled = false;
-                btn.textContent = "Cancel My Appointment";
+                btn.textContent = "Confirm Cancellation";
             }
         });
 
