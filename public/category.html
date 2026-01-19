@@ -529,29 +529,45 @@ function getIcon(categoryName){
     return '🏥';
 }
 
-async function loadCategories(){
-    const container=document.getElementById("categories");
-    try{
-        const res=await fetch("/get_categories");
-        if(!res.ok) throw new Error("Failed to fetch categories");
-        const categories=await res.json();
-        container.innerHTML='';
-        if(categories.length===0){ container.innerHTML='<div class="loading">No categories available</div>'; return; }
-        categories.forEach(cat=>{
-            const div=document.createElement("div");
-            div.className="category-card";
-            const icon=getIcon(cat.category_name);
+async function loadCategories() {
+    const container = document.getElementById("categories");
+    try {
+        const res = await fetch("/get_categories");
+        if (!res.ok) throw new Error("Failed to fetch categories");
+
+        const categories = await res.json();
+        container.innerHTML = '';
+
+        if (categories.length === 0) {
+            container.innerHTML = '<div class="loading">No categories available</div>';
+            return;
+        }
+
+        categories.forEach(cat => {
+            const div = document.createElement("div");
+            div.className = "category-card";
+
+            const icon = getIcon(cat.category_name);
             const isSVG = icon.includes('<svg');
-            div.innerHTML=`
+
+            div.innerHTML = `
                 <div class="icon-circle">${isSVG ? icon : `<span style="font-size: 48px;">${icon}</span>`}</div>
                 <h3>${cat.category_name}</h3>
                 <p>${cat.description || 'Find qualified healthcare professionals in this specialty'}</p>
                 <button class="find-doctors-btn">Find Doctors</button>
             `;
-            div.onclick=()=>{ window.location.href=`/doctors_page?category_id=${cat.category_id}&category_name=${encodeURIComponent(cat.category_name)}`; };
+
+            div.onclick = () => {
+                window.location.href = `/doctors_page?category_id=${cat.category_id}&category_name=${encodeURIComponent(cat.category_name)}`;
+            };
+
             container.appendChild(div);
         });
-    }catch(err){ console.error(err); container.innerHTML='<div class="error">Failed to load categories. Please try again later.</div>'; }
+
+    } catch (err) {
+        console.error(err);
+        container.innerHTML = '<div class="error">Failed to load categories. Please try again later.</div>';
+    }
 }
 
 loadCategories();
