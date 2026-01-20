@@ -1,5 +1,4 @@
 #include "schedule_controller.h"
-
 #include "../models/schedule.h"
 #include <iostream>
 #include <fstream>
@@ -9,6 +8,7 @@ void registerScheduleRoutes(crow::SimpleApp& app, sqlite3* db)
 {
     // --------------------------------------------------
     // GET: Available slots for a doctor on a given date
+    // Exclude BOOKED or BLOCKED
     // --------------------------------------------------
     CROW_ROUTE(app, "/get_available_slots/<int>/<string>").methods("GET"_method)
     ([db](int doctor_id, const std::string& appointment_date)
@@ -22,7 +22,8 @@ void registerScheduleRoutes(crow::SimpleApp& app, sqlite3* db)
             "    SELECT a.schedule_id "
             "    FROM Appointment a "
             "    WHERE a.doctor_id = ? "
-            "    AND a.appointment_date = ? "
+            "      AND a.appointment_date = ? "
+            "      AND (a.status = 'BOOKED' OR a.status = 'BLOCKED') "
             ") "
             "ORDER BY ds.time_slot;";
 
@@ -115,6 +116,29 @@ void registerScheduleRoutes(crow::SimpleApp& app, sqlite3* db)
         crow::json::wvalue res;
         res["success"] = true;
         res["message"] = "Slot added successfully";
+        return crow::response(200, res);
+    });
+
+    // --------------------------------------------------
+    // POST: Block a slot for a doctor
+    // --------------------------------------------------
+    CROW_ROUTE(app, "/block_slot").methods("POST"_method)
+    ([db](const crow::request& req)
+    {
+        auto body = crow::json::load(req.body);
+        if (!body || !body.has("doctor_id") || !body.has("schedule_id")) {
+            return crow::response(400, "Missing doctor_id or schedule_id");
+        }
+
+        int doctor_id = body["doctor_id"].i();
+        int schedule_id = body["schedule_id"].i();
+
+        bool blocked = DoctorSchedule::blockSlotForDoctor(db, doctor_id, schedule_id);
+
+        crow::json::wvalue res;
+        res["success"] = blocked;
+        res["message"] = blocked ? "Slot blocked successfully" : "Failed to block slot";
+
         return crow::response(200, res);
     });
 }

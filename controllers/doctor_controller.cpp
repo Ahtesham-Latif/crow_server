@@ -6,6 +6,7 @@
 #include "../models/doctor.h"          // Doctor model
 #include "doctor_controller.h"         // This controller's header
 
+using namespace std;
 void registerDoctorRoutes(crow::SimpleApp& app, sqlite3* db) {
 
     // ---------------------------------
@@ -72,9 +73,9 @@ void registerDoctorRoutes(crow::SimpleApp& app, sqlite3* db) {
         }
 
         // Extract fields
-        std::string name = body["doctor_name"].s();
-        std::string experience = body["experience_years"].s();
-        std::string degree = body["qualifications"].s();
+        string name = body["doctor_name"].s();
+        string experience = body["experience_years"].s();
+        string degree = body["qualifications"].s();
         double rating = body["ratings"].d();
         int category_id = body["category_id"].i();
 

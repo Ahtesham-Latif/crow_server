@@ -4,13 +4,13 @@
 #include <string>
 #include <iostream>
 #include <vector>
-
+using namespace std;
 class Doctor {
 public:
     int doctor_id;
-    std::string doctor_name;
-    std::string experience;  // maps to experience_years in DB
-    std::string degree;      // maps to qualifications in DB
+    string doctor_name;
+    string experience;  // maps to experience_years in DB
+    string degree;      // maps to qualifications in DB
     double rating;           // maps to ratings in DB
     int category_id;
 
@@ -61,9 +61,9 @@ public:
 
         while (sqlite3_step(stmt) == SQLITE_ROW) {
             int id = sqlite3_column_int(stmt, 0);
-            std::string name = (const char*)sqlite3_column_text(stmt, 1);
-            std::string exp = (const char*)sqlite3_column_text(stmt, 2);
-            std::string deg = (const char*)sqlite3_column_text(stmt, 3);
+            string name = (const char*)sqlite3_column_text(stmt, 1);
+            string exp = (const char*)sqlite3_column_text(stmt, 2);
+            string deg = (const char*)sqlite3_column_text(stmt, 3);
             double rate = sqlite3_column_double(stmt, 4);
             int category = sqlite3_column_int(stmt, 5);
 

@@ -8,6 +8,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # ---- Windows compatibility ----
 add_definitions(-D_WIN32_WINNT=0x0A00)
+add_definitions(-DCROW_ENABLE_SSL)  # <<< Enable SSL for Crow
 
 # ---- MinGW console subsystem ----
 if (MINGW)
@@ -41,8 +42,10 @@ target_link_libraries(server
     ws2_32
     mswsock
     advapi32
+    ssl            # OpenSSL library
+    crypto         # OpenSSL library
 )
 
 # ---- Info ----
-message(STATUS "Crow + SQLite3 + cpp-httplib configured successfully!")
+message(STATUS "Crow + SQLite3 + cpp-httplib + OpenSSL configured successfully!")
 message(STATUS "C++ Standard: ${CMAKE_CXX_STANDARD}")

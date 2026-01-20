@@ -10,7 +10,8 @@ cmake_install.cmake
 # ===== Environment variables / secrets =====
 .env
 /config/n8n_config.h
-
+cert.pem
+key.pem
 # ===== Database files (local / temp) =====
 db/*.db
 db/*.sqbpro

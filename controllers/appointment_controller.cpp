@@ -53,7 +53,7 @@ void registerAppointmentRoutes(crow::SimpleApp& app, sqlite3* db)
         std::string doctor_name       = body["doctor_name"].s();
         std::string appointment_date  = body["date"].s();
         std::string time_slot         = body["time_slot"].s();
-        std::string request;
+        std::string request  ;
 if (body.has("request")) {
     request = std::string(body["request"].s());
 } else {

@@ -14,7 +14,6 @@
                     "${workspaceFolder}/httplib",
                     "${workspaceFolder}/controllers",
                     "${workspaceFolder}/models",
-                    "${workspaceFolder}/views",
                     "${workspaceFolder}/public",
                     "${workspaceFolder}/db"
                 ],

@@ -589,9 +589,13 @@ const params = new URLSearchParams(window.location.search);
 const doctorId = params.get("doctor_id");
 const doctorName = params.get("doctor");
 const categoryName = params.get("category_name");
+const doctorRating = params.get("rating");
+const doctorExperience = params.get("experience");
 
 document.getElementById("doctorName").textContent = decodeURIComponent(doctorName);
 document.getElementById("categoryName").textContent = decodeURIComponent(categoryName);
+document.getElementById("doctorRating").textContent = params.get("rating") || "N/A";
+document.getElementById("doctorExperience").textContent = (params.get("experience") || "N/A") + " Years Exp.";
 
 // Calendar state
 let currentDate = new Date();

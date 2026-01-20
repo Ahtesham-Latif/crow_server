@@ -397,23 +397,39 @@ async function fetchDoctors(){
                     <div class="stat-item">
                         <div class="stat-value">
                             <span class="stat-icon star-icon">⭐</span>
-                            <span>${doc.ratings}</span>
+                            <span>${doc.ratings || "N/A"}</span>
                         </div>
                         <div class="stat-label">Rating</div>
                     </div>
                     <div class="stat-item">
                         <div class="stat-value">
                             <span class="stat-icon experience-icon">🎓</span>
-                            <span>${doc.experience_years}y</span>
+                            <span>${doc.experience_years || "N/A"}y</span>
                         </div>
                         <div class="stat-label">Experience</div>
                     </div>
                 </div>
-                <button class="btn-schedule" onclick="goToSchedule(${doc.doctor_id}, '${encodeURIComponent(doc.doctor_name)}')">
+                <button class="btn-schedule" 
+                    data-doctor-id="${doc.doctor_id}"
+                    data-doctor-name="${doc.doctor_name}"
+                    data-rating="${doc.ratings || 'N/A'}"
+                    data-experience="${doc.experience_years || 'N/A'}">
                     <span class="btn-icon">🕐</span>
                     Book Appointment
                 </button>
             `;
+            
+            // Add event listener after creating the card
+            const btn = card.querySelector('.btn-schedule');
+            btn.addEventListener('click', function() {
+                goToSchedule(
+                    this.dataset.doctorId,
+                    this.dataset.doctorName,
+                    this.dataset.rating,
+                    this.dataset.experience
+                );
+            });
+            
             grid.appendChild(card);
         });
         container.appendChild(grid);
@@ -423,9 +439,9 @@ async function fetchDoctors(){
     }
 }
 
-// NEW: Route to schedule_page instead of appointment_page
-function goToSchedule(doctorId, doctorName){
-    window.location.href = `/schedule_page?doctor_id=${doctorId}&doctor=${doctorName}&category_name=${encodeURIComponent(categoryName)}`;
+// Redirect to schedule page with all details
+function goToSchedule(doctorId, doctorName, rating, experience){
+    window.location.href = `/schedule_page?doctor_id=${doctorId}&doctor=${encodeURIComponent(doctorName)}&category_name=${encodeURIComponent(categoryName)}&rating=${rating}&experience=${experience}`;
 }
 
 fetchDoctors();

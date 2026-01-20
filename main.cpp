@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+using namespace std;
 
 // Controllers
 #include "controllers/category_controller.h"
@@ -72,7 +73,7 @@ int main() {
     // -------------------------------------------------
     // Start the server
     // -------------------------------------------------
-    std::cout << "Server running at http://localhost:8080\n";
+    cout << "Server running at http://localhost:8080\n";
     app.port(8080).multithreaded().run();
 
     // Close DB connection
