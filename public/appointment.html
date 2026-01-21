@@ -9,7 +9,9 @@
         .container { max-width: 500px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); }
         .details-summary { background: #edf2f7; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 5px solid #667eea; }
         label { font-weight: 600; display: block; margin-top: 15px; }
-        input, select, textarea { width: 100%; padding: 12px; margin-top: 5px; border-radius: 8px; border: 2px solid #e2e8f0; box-sizing: border-box; font-size: 16px; }
+        input, select, textarea { width: 100%; padding: 12px; margin-top: 5px; border-radius: 8px; border: 2px solid #e2e8f0; box-sizing: border-box; font-size: 16px; transition: border-color 0.3s; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #667eea; }
+        textarea { resize: vertical; font-family: inherit; }
         button { width: 100%; background: #667eea; color: white; padding: 15px; border: none; border-radius: 10px; font-size: 18px; font-weight: 700; cursor: pointer; margin-top: 25px; transition: 0.3s; }
         button:hover { background: #5a67d8; }
         button:disabled { background: #cbd5e0; cursor: not-allowed; }
@@ -43,8 +45,13 @@
                 <option value="Other">Other</option>
             </select>
 
-            <label>Notes (Optional)</label>
-            <textarea id="request" rows="2" placeholder="Describe symptoms..."></textarea>
+            <label>Reason for Visit *</label>
+            <select id="reasonVisit" required>
+                <option value="">Select reason for visit</option>
+            </select>
+
+            <label>Special Request (Optional)</label>
+            <textarea id="request" rows="3" placeholder="Any specific details or concerns..."></textarea>
 
             <button type="submit" id="submitBtn">Confirm Appointment</button>
             <div id="errorMsg" class="error"></div>
@@ -52,19 +59,77 @@
     </div>
 
     <script>
+        // Reasons by category
+        const reasonsByCategory = {
+            "General Physician": [
+                "Fever & flu treatment",
+                "Cold, cough, sore throat",
+                "Headache & body pain",
+                "Blood pressure management",
+                "Diabetes check & control",
+                "Stomach pain, acidity, indigestion",
+                "General infections",
+                "Routine health checkups",
+                "Fatigue & weakness",
+                "Initial diagnosis & referrals"
+            ],
+            "Dentist": [
+                "Toothache treatment",
+                "Cavity filling",
+                "Teeth cleaning (scaling & polishing)",
+                "Gum disease treatment",
+                "Tooth extraction",
+                "Root canal treatment",
+                "Bad breath treatment",
+                "Tooth sensitivity care",
+                "Dental checkups",
+                "Braces consultation"
+            ],
+            "Pediatrician": [
+                "Child fever & infections",
+                "Cold, cough & flu in children",
+                "Vaccinations & immunization",
+                "Growth & development checkups",
+                "Nutrition & diet guidance",
+                "Diarrhea & vomiting in children",
+                "Skin rashes & allergies",
+                "Childhood asthma care",
+                "Newborn care",
+                "School health certificates"
+            ]
+        };
+
         // 1. Get Params from URL
         const params = new URLSearchParams(window.location.search);
         const doctorName = decodeURIComponent(params.get("doctor") || "Doctor");
         const apptDate = params.get("date") || "";
         const apptTime = decodeURIComponent(params.get("slot") || "");
         const scheduleId = params.get("schedule_id");
+        const categoryName = params.get("category_name");
 
         // 2. Display Summary
         document.getElementById("summary_doctor").textContent = doctorName;
         document.getElementById("summary_date").textContent = apptDate;
         document.getElementById("summary_time").textContent = apptTime;
 
-        // 3. Form Submission
+        // 3. Populate Reason for Visit based on category
+        const reasonSelect = document.getElementById("reasonVisit");
+        if (categoryName && reasonsByCategory[categoryName]) {
+            reasonsByCategory[categoryName].forEach(reason => {
+                const option = document.createElement('option');
+                option.value = reason;
+                option.textContent = reason;
+                reasonSelect.appendChild(option);
+            });
+        } else {
+            // Fallback if category not found
+            const option = document.createElement('option');
+            option.value = "General Consultation";
+            option.textContent = "General Consultation";
+            reasonSelect.appendChild(option);
+        }
+
+        // 4. Form Submission
         document.getElementById("bookingForm").addEventListener("submit", async (e) => {
             e.preventDefault();
             const btn = document.getElementById("submitBtn");
@@ -85,6 +150,14 @@
                 return;
             }
 
+            const reasonForVisit = document.getElementById("reasonVisit").value;
+            const specialRequest = document.getElementById("request").value.trim();
+            
+            // Combine reason and special request
+            const combinedRequest = specialRequest 
+                ? `${reasonForVisit} - ${specialRequest}` 
+                : reasonForVisit;
+
             const payload = {
                 name: document.getElementById("name").value.trim(),
                 age: ageVal,
@@ -94,7 +167,7 @@
                 date: apptDate,
                 time_slot: apptTime,
                 schedule_id: schedIdVal,
-                request: document.getElementById("request").value.trim()
+                request: combinedRequest
             };
 
             console.log("Sending payload:", JSON.stringify(payload));

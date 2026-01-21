@@ -73,8 +73,12 @@ int main() {
     // -------------------------------------------------
     // Start the server
     // -------------------------------------------------
-    cout << "Server running at http://localhost:8080\n";
-    app.port(8080).multithreaded().run();
+    cout << "Server running at https://localhost:8443\n";
+    app.port(8443).ssl_file("D:/APPOINTMNENT BOOKING SYSTEM/crow_backend/cert.pem","D:/APPOINTMNENT BOOKING SYSTEM/crow_backend/key.pem")
+    .multithreaded()
+    .run();
+
+
 
     // Close DB connection
     sqlite3_close(db);
