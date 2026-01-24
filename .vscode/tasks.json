@@ -12,7 +12,8 @@
     {
       "label": "CMake: build",
       "type": "shell",
-      "command": "mingw32-make -j8",
+      "command": "mingw32-make -j4",
+      //uses -j4 to use less CPU cores for building to avoid overheating
       "options": {
         "cwd": "${workspaceFolder}/build"
       },
