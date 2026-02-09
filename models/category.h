@@ -44,6 +44,27 @@ public:
 
         return true;
     }
+    static bool remove(sqlite3* db, int category_id) {
+        const char* sql = "DELETE FROM Category WHERE category_id = ?;";
+        sqlite3_stmt* stmt; 
+        // prepare the SQL statement
+        if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+            cerr << "Prepare failed: " << sqlite3_errmsg(db) << endl;
+            return false;
+        }
+        // bind the category_id parameter preventing SQL injection
+        sqlite3_bind_int(stmt, 1, category_id);
+        // execute the statement
+        int rc = sqlite3_step(stmt);
+        sqlite3_finalize(stmt);
+        // check if deletion was successful
+        if (rc != SQLITE_DONE) {
+            cerr << "Delete failed: " << sqlite3_errmsg(db) << endl;
+            return false;
+        }
+
+        return true;
+    }
 
     // Fetch all categories from DB
     static vector<Category> fetchAll(sqlite3* db) {

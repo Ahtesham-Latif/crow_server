@@ -65,5 +65,24 @@ void registerCategoryRoutes(crow::SimpleApp& app, sqlite3* db) {
 
     return crow::response(200, response);
 });
+    // DELETE category
+    CROW_ROUTE(app, "/delete_category/<int>").methods("DELETE"_method)
+([db](const crow::request& req, int category_id) {
+
+    if (category_id <= 0) {
+        return crow::response(400, "Invalid category_id");
+    }
+
+    bool deleted = Category::remove(db, category_id);
+
+    crow::json::wvalue response;
+    response["success"] = deleted;
+    response["message"] =
+        deleted ? "Category deleted successfully!"
+                : "Category not found or already deleted.";
+
+    return crow::response(200, response);
+});
+
 
 }
