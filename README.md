@@ -3,7 +3,10 @@
 A secure, high-performance web-based application designed to streamline the process of scheduling medical appointments. This system allows patients to browse doctors by specialty, view real-time availability, and book or cancel appointments with ease.
 
 **Author:** [Ahtesham Latif](https://github.com/Ahtesham-Latif)
-
+![C++](https://img.shields.io/badge/C++-17-blue.svg)
+![Framework](https://img.shields.io/badge/Framework-Crow-green.svg)
+![Database](https://img.shields.io/badge/Database-SQLite3-lightgrey.svg)
+![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 ---
 
 ## 🏥 Key Features
