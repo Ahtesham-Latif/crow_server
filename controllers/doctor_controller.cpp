@@ -16,23 +16,29 @@ void registerDoctorRoutes(crow::SimpleApp& app, sqlite3* db) {
     ([db](const crow::request& req) {
 
         auto query = req.url_params.get("category_id");
-        if (!query) {
-            return crow::response(400, "Missing category_id");
-        }
-
-        int category_id = std::stoi(query);
-
         sqlite3_stmt* stmt;
-        const char* sql =
-            "SELECT doctor_id, doctor_name, experience_years, qualification, ratings "
-            "FROM Doctor WHERE category_id = ?";
+        const char* sql = nullptr;
+        int category_id = 0;
+
+        if (query) {
+            category_id = std::stoi(query);
+            sql =
+                "SELECT doctor_id, doctor_name, experience_years, qualification, ratings, category_id "
+                "FROM Doctor WHERE category_id = ?";
+        } else {
+            sql =
+                "SELECT doctor_id, doctor_name, experience_years, qualification, ratings, category_id "
+                "FROM Doctor";
+        }
 
         if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
             std::cerr << "SQL error: " << sqlite3_errmsg(db) << std::endl;
             return crow::response(500, "Database error");
         }
 
-        sqlite3_bind_int(stmt, 1, category_id);
+        if (query) {
+            sqlite3_bind_int(stmt, 1, category_id);
+        }
 
         crow::json::wvalue result;
         int i = 0;
@@ -46,6 +52,7 @@ void registerDoctorRoutes(crow::SimpleApp& app, sqlite3* db) {
             result[i]["qualifications"] =
                 reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
             result[i]["ratings"] = sqlite3_column_double(stmt, 4);
+            result[i]["category_id"] = sqlite3_column_int(stmt, 5);
             i++;
         }
 
@@ -65,6 +72,7 @@ void registerDoctorRoutes(crow::SimpleApp& app, sqlite3* db) {
         }
 
         if (!body.has("doctor_name") ||
+            !body.has("phone") ||
             !body.has("experience_years") ||
             !body.has("qualifications") ||
             !body.has("ratings") ||
@@ -74,18 +82,40 @@ void registerDoctorRoutes(crow::SimpleApp& app, sqlite3* db) {
 
         // Extract fields
         string name = body["doctor_name"].s();
+        string phone = body["phone"].s();
         string experience = body["experience_years"].s();
         string degree = body["qualifications"].s();
         double rating = body["ratings"].d();
         int category_id = body["category_id"].i();
 
         // Call insert() directly with proper arguments
-        bool inserted = Doctor::insert(db, name, experience, degree, rating, category_id);
+        bool inserted = Doctor::insert(db, name, phone, experience, degree, rating, category_id);
 
         crow::json::wvalue response;
         response["success"] = inserted;
         response["message"] =
             inserted ? "Doctor added successfully!" : "Failed to add doctor.";
+
+        return crow::response(200, response);
+    });
+
+    // ---------------------------------
+    // DELETE doctor
+    // ---------------------------------
+    CROW_ROUTE(app, "/delete_doctor/<int>").methods("DELETE"_method)
+    ([db](const crow::request& req, int doctor_id) {
+
+        if (doctor_id <= 0) {
+            return crow::response(400, "Invalid doctor_id");
+        }
+
+        bool deleted = Doctor::remove(db, doctor_id);
+
+        crow::json::wvalue response;
+        response["success"] = deleted;
+        response["message"] =
+            deleted ? "Doctor deleted successfully!"
+                    : "Doctor not found or already deleted.";
 
         return crow::response(200, response);
     });
