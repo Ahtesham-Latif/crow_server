@@ -46,7 +46,6 @@ int main() {
         std::cerr << "Failed to open DB: " << sqlite3_errmsg(db) << std::endl;
         return 1;
     }
-
     // -------------------------------------------------
     // Serve static HTML pages
     // -------------------------------------------------
@@ -56,6 +55,7 @@ int main() {
     CROW_ROUTE(app, "/appointment_page")([]() { return serveFile("../public/appointment.html"); });
     CROW_ROUTE(app, "/confirmation_page")([]() { return serveFile("../public/confirmation.html"); });
     CROW_ROUTE(app, "/cancel_appointment_page")([]() { return serveFile("../public/cancellation.html"); });
+    CROW_ROUTE(app, "/doctor_dashboard_page")([]() { return serveFile("../public/doctor_dashboard.html"); });
     CROW_ROUTE(app, "/controller(mind)")([]() { return serveFile("../public/mind.html"); });
     // -------------------------------------------------
     // API routes (MVC controllers)

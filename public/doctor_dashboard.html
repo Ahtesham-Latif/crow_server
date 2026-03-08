@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Doctor Dashboard</title>
+<style>
+:root {
+    --bg: #f4f6fb;
+    --card: #ffffff;
+    --text: #18243a;
+    --muted: #60708f;
+    --border: #dde4f0;
+    --brand: #0f766e;
+    --brand-soft: #ecfdf5;
+    --danger: #b42318;
+    --danger-soft: #fef3f2;
+}
+* { box-sizing: border-box; }
+body {
+    margin: 0;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(180deg, #eef3ff 0%, var(--bg) 100%);
+    color: var(--text);
+}
+.wrapper {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 28px 18px 40px;
+}
+.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 10px 22px rgba(19, 38, 69, 0.06);
+}
+h1 {
+    margin: 0 0 8px;
+    font-size: 28px;
+}
+.sub {
+    margin: 0 0 22px;
+    color: var(--muted);
+}
+form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    align-items: end;
+}
+label {
+    display: block;
+    font-size: 13px;
+    margin-bottom: 6px;
+    color: var(--muted);
+}
+input {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    font-size: 14px;
+}
+button {
+    border: 0;
+    border-radius: 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+    font-weight: 600;
+}
+.btn-primary {
+    background: var(--brand);
+    color: white;
+}
+.btn-secondary {
+    background: #e8edf7;
+    color: #1d2b44;
+}
+.toolbar {
+    margin-top: 20px;
+    display: none;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: start;
+}
+.status {
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    display: none;
+    font-size: 14px;
+}
+.ok { background: var(--brand-soft); color: #065f46; border: 1px solid #a7f3d0; }
+.err { background: var(--danger-soft); color: var(--danger); border: 1px solid #fecdca; }
+.grid {
+    margin-top: 18px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+    gap: 12px;
+}
+.slot {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+}
+.slot-time {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+.badge {
+    display: inline-block;
+    font-size: 12px;
+    border-radius: 999px;
+    padding: 2px 8px;
+    margin-bottom: 10px;
+}
+.available { background: #e6f6ff; color: #09557c; }
+.blocked { background: #fff4e5; color: #9a5a00; }
+.booked { background: #fee4e2; color: #8e1f16; }
+.hidden { display: none; }
+.calendar-wrap {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+}
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+.calendar-nav {
+    border: 0;
+    background: transparent;
+    color: #1d2b44;
+    font-size: 20px;
+    padding: 2px 8px;
+    cursor: pointer;
+}
+.calendar-month {
+    font-size: 15px;
+    font-weight: 700;
+}
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+}
+.calendar-day-header {
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    padding: 4px 0;
+}
+.calendar-empty { height: 34px; }
+.calendar-day {
+    height: 34px;
+    border-radius: 8px;
+    border: 0;
+    background: #f7f9ff;
+    cursor: pointer;
+}
+.calendar-day:hover:not(.calendar-day-disabled):not(.calendar-day-selected) {
+    background: #e8eefc;
+}
+.calendar-day-disabled {
+    color: #b6bfd0;
+    background: #f4f6fb;
+    cursor: not-allowed;
+}
+.calendar-day-selected {
+    background: var(--brand);
+    color: #fff;
+}
+.selected-date {
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--muted);
+}
+</style>
+</head>
+<body>
+<div class="wrapper">
+    <div class="card">
+        <h1>Doctor Dashboard</h1>
+        <p class="sub">Verify with your name and phone. You can only manage your own slots.</p>
+
+        <form id="verifyForm">
+            <div>
+                <label for="doctorName">Doctor Name</label>
+                <input id="doctorName" required />
+            </div>
+            <div>
+                <label for="doctorPhone">Phone</label>
+                <input id="doctorPhone" required />
+            </div>
+            <button class="btn-primary" type="submit">Verify</button>
+        </form>
+
+        <div id="status" class="status"></div>
+
+        <div id="toolbar" class="toolbar">
+            <div class="calendar-wrap">
+                <div class="calendar-header">
+                    <button class="calendar-nav" id="prevMonth" type="button">‹</button>
+                    <div id="calendarMonth" class="calendar-month"></div>
+                    <button class="calendar-nav" id="nextMonth" type="button">›</button>
+                </div>
+                <div class="calendar-grid">
+                    <div class="calendar-day-header">Su</div>
+                    <div class="calendar-day-header">Mo</div>
+                    <div class="calendar-day-header">Tu</div>
+                    <div class="calendar-day-header">We</div>
+                    <div class="calendar-day-header">Th</div>
+                    <div class="calendar-day-header">Fr</div>
+                    <div class="calendar-day-header">Sa</div>
+                </div>
+                <div id="calendarDays" class="calendar-grid"></div>
+                <div id="selectedDateDisplay" class="selected-date">Select a date</div>
+            </div>
+            <div>
+                <button id="loadSlots" class="btn-secondary" type="button">Refresh Slots</button>
+                <button id="logout" class="btn-secondary" type="button" style="margin-top:8px;">Logout</button>
+            </div>
+        </div>
+
+        <div id="slots" class="grid hidden"></div>
+    </div>
+</div>
+
+<script>
+let token = "";
+
+const statusBox = document.getElementById("status");
+const verifyForm = document.getElementById("verifyForm");
+const toolbar = document.getElementById("toolbar");
+const slotsBox = document.getElementById("slots");
+const calendarDays = document.getElementById("calendarDays");
+const calendarMonth = document.getElementById("calendarMonth");
+const selectedDateDisplay = document.getElementById("selectedDateDisplay");
+let currentDate = new Date();
+let selectedDateISO = "";
+
+function showStatus(message, ok) {
+    statusBox.style.display = "block";
+    statusBox.className = "status " + (ok ? "ok" : "err");
+    statusBox.textContent = message;
+}
+
+function renderSlots(slots, selectedDate) {
+    slotsBox.innerHTML = "";
+    slotsBox.classList.remove("hidden");
+
+    if (!Array.isArray(slots) || slots.length === 0) {
+        slotsBox.innerHTML = "<div>No slots found.</div>";
+        return;
+    }
+
+    slots.forEach(slot => {
+        const status = (slot.status || "AVAILABLE").toUpperCase();
+        const card = document.createElement("div");
+        card.className = "slot";
+
+        const badgeClass = status === "BLOCKED" ? "blocked" : status === "BOOKED" ? "booked" : "available";
+
+        card.innerHTML = `
+            <div class="slot-time">${slot.time_slot}</div>
+            <span class="badge ${badgeClass}">${status}</span>
+            <div></div>
+        `;
+
+        const actionContainer = card.querySelector("div:last-child");
+
+        if (status === "AVAILABLE") {
+            const btn = document.createElement("button");
+            btn.className = "btn-primary";
+            btn.textContent = "Block";
+            btn.onclick = async () => {
+                const res = await fetch("/doctor_dashboard/block_slot", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ token, schedule_id: slot.schedule_id, appointment_date: selectedDate })
+                });
+                if (res.ok) {
+                    showStatus("Slot blocked.", true);
+                    await loadSlots();
+                } else {
+                    showStatus(await res.text(), false);
+                }
+            };
+            actionContainer.appendChild(btn);
+        }
+
+        if (status === "BLOCKED") {
+            const btn = document.createElement("button");
+            btn.className = "btn-secondary";
+            btn.textContent = "Unblock";
+            btn.onclick = async () => {
+                const res = await fetch("/doctor_dashboard/unblock_slot", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ token, schedule_id: slot.schedule_id, appointment_date: selectedDate })
+                });
+                if (res.ok) {
+                    showStatus("Slot unblocked.", true);
+                    await loadSlots();
+                } else {
+                    showStatus(await res.text(), false);
+                }
+            };
+            actionContainer.appendChild(btn);
+        }
+
+        if (status === "BOOKED") {
+            actionContainer.textContent = "Booked by patient";
+            actionContainer.style.fontSize = "12px";
+            actionContainer.style.color = "#8e1f16";
+        }
+
+        slotsBox.appendChild(card);
+    });
+}
+
+async function loadSlots() {
+    if (!token) return;
+    if (!selectedDateISO) {
+        showStatus("Please select a date first.", false);
+        return;
+    }
+
+    const res = await fetch(`/doctor_dashboard/slots/${selectedDateISO}?token=${encodeURIComponent(token)}`);
+    if (!res.ok) {
+        showStatus(await res.text(), false);
+        return;
+    }
+
+    const data = await res.json();
+    renderSlots(data, selectedDateISO);
+}
+
+function renderCalendar() {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    const monthNames = ["January", "February", "March", "April", "May", "June",
+                       "July", "August", "September", "October", "November", "December"];
+    calendarMonth.textContent = `${monthNames[month]} ${year}`;
+    calendarDays.innerHTML = "";
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    for (let i = 0; i < firstDay; i++) {
+        const emptyDay = document.createElement("div");
+        emptyDay.className = "calendar-empty";
+        calendarDays.appendChild(emptyDay);
+    }
+
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dayDate = new Date(year, month, day);
+        dayDate.setHours(0, 0, 0, 0);
+        const dayOfWeek = dayDate.getDay();
+        const iso = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "calendar-day";
+        btn.textContent = String(day);
+
+        const isWeekendBlocked = dayOfWeek === 0 || dayOfWeek === 5 || dayOfWeek === 6; // Sun, Fri, Sat
+        const isPast = dayDate < today;
+
+        if (isWeekendBlocked || isPast) {
+            btn.classList.add("calendar-day-disabled");
+            btn.disabled = true;
+        } else {
+            btn.addEventListener("click", async () => {
+                selectedDateISO = iso;
+                selectedDateDisplay.textContent = `Selected: ${iso}`;
+                renderCalendar();
+                await loadSlots();
+            });
+        }
+
+        if (selectedDateISO === iso) {
+            btn.classList.add("calendar-day-selected");
+        }
+
+        calendarDays.appendChild(btn);
+    }
+}
+
+function getInitialAllowedDate() {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    while (true) {
+        const day = d.getDay();
+        if (day !== 0 && day !== 5 && day !== 6) {
+            return d;
+        }
+        d.setDate(d.getDate() + 1);
+    }
+}
+
+verifyForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const doctor_name = document.getElementById("doctorName").value.trim();
+    const phone = document.getElementById("doctorPhone").value.trim();
+
+    const res = await fetch("/doctor_dashboard/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ doctor_name, phone })
+    });
+
+    if (!res.ok) {
+        showStatus(await res.text(), false);
+        return;
+    }
+
+    const data = await res.json();
+    token = data.token;
+    toolbar.style.display = "grid";
+    const firstAllowedDate = getInitialAllowedDate();
+    currentDate = new Date(firstAllowedDate);
+    selectedDateISO = `${firstAllowedDate.getFullYear()}-${String(firstAllowedDate.getMonth() + 1).padStart(2, "0")}-${String(firstAllowedDate.getDate()).padStart(2, "0")}`;
+    selectedDateDisplay.textContent = `Selected: ${selectedDateISO}`;
+    renderCalendar();
+    showStatus(`Verified as ${data.doctor_name}.`, true);
+    await loadSlots();
+});
+
+document.getElementById("loadSlots").addEventListener("click", loadSlots);
+document.getElementById("prevMonth").addEventListener("click", () => {
+    currentDate.setMonth(currentDate.getMonth() - 1);
+    renderCalendar();
+});
+document.getElementById("nextMonth").addEventListener("click", () => {
+    currentDate.setMonth(currentDate.getMonth() + 1);
+    renderCalendar();
+});
+
+document.getElementById("logout").addEventListener("click", () => {
+    token = "";
+    toolbar.style.display = "none";
+    slotsBox.classList.add("hidden");
+    slotsBox.innerHTML = "";
+    selectedDateISO = "";
+    selectedDateDisplay.textContent = "Select a date";
+    showStatus("Logged out.", true);
+});
+</script>
+</body>
+</html>
