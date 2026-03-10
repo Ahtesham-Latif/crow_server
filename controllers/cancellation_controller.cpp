@@ -12,7 +12,7 @@ void registerCancellationRoutes(crow::SimpleApp& app, sqlite3* db) {
     ([db](const crow::request& req) {
 
         auto body = crow::json::load(req.body);
-        if (!body) return crow::response(400, "Invalid JSON");
+        if (!body) return crow::response(400, "Please send a valid request.");
 
         // Fixed r_string incompatibility by explicitly creating std::string
         int appointment_id = body.has("appointment_id") ? body["appointment_id"].i() : -1;
@@ -22,14 +22,14 @@ void registerCancellationRoutes(crow::SimpleApp& app, sqlite3* db) {
         int age            = body.has("age")            ? body["age"].i()            : -1;
 
         if (appointment_id <= 0 || patient_id <= 0 || name.empty() || email.empty())
-            return crow::response(400, "Invalid input details");
+            return crow::response(400, "Please provide all required details.");
 
         // --- Fetch patient info & VERIFY identity ---
         PatientInfo info;
         bool verified = Cancellation::getPatientInfoForCancellation(db, patient_id, name, email, age, info);
 
         if (!verified) {
-            return crow::response(403, "Verification failed: Identity details do not match");
+            return crow::response(403, "Sorry, we could not verify those details. Please check and try again.");
         }
 
         // --- Update status in DB (No deletion) ---
@@ -38,8 +38,8 @@ void registerCancellationRoutes(crow::SimpleApp& app, sqlite3* db) {
         // --- Respond to client ---
         crow::json::wvalue res;
         res["success"] = ok;
-        res["message"] = ok ? "Booking updated to Cancelled successfully!" 
-                            : "Database update failed.";
+        res["message"] = ok ? "Your appointment has been cancelled successfully." 
+                            : "Sorry, we could not cancel the appointment right now. Please try again.";
         auto response = crow::response(ok ? 200 : 500, res);
 
         // --- Send to N8N ---

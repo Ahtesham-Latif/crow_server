@@ -22,7 +22,7 @@ void registerPatientRoutes(crow::SimpleApp& app, sqlite3* db) {
         auto body = crow::json::load(req.body);
         if (!body || !body.has("name") || !body.has("age")
             || !body.has("email") || !body.has("gender")) {
-            return crow::response(400, "Missing patient information");
+            return crow::response(400, "Please provide all required patient information.");
         }
 
         std::string name   = body["name"].s();
@@ -45,13 +45,13 @@ void registerPatientRoutes(crow::SimpleApp& app, sqlite3* db) {
         // --- Insert patient ---
         if (!Patient::insert(db, patient_id, name, age, email, gender, request)) {
             std::cerr << "[ERROR] Failed to insert patient: " << patient_id << "\n";
-            return crow::response(500, "Failed to insert patient");
+            return crow::response(500, "Sorry, we couldn't save the patient details right now. Please try again.");
         }
 
         crow::json::wvalue res;
         res["success"] = true;
         res["patient_id"] = patient_id;
-        res["message"] = "Patient added successfully";
+        res["message"] = "Patient added successfully.";
         return crow::response(200, res);
     });
 }

@@ -147,14 +147,14 @@
                 const result = await response.json();
 
                 if (response.ok && result.success) {
-                    showMessage("✅ Verification successful. Your appointment has been marked as Cancelled.", "success");
+                    showMessage("Verification successful. Your appointment has been cancelled.", "success");
                     document.getElementById('cancelForm').reset();
                 } else {
                     // This will show your C++ error message (e.g., "Verification failed")
-                    showMessage("❌ " + (result.message || "Details do not match our records. Please check your IDs and info."), "error");
+                    showMessage(result.message || "Sorry, we could not verify those details. Please check and try again.", "error");
                 }
             } catch (err) {
-                showMessage("❌ Connection error. Unable to reach the server.", "error");
+                showMessage("Sorry, we could not reach the server. Please try again.", "error");
             } finally {
                 btn.disabled = false;
                 btn.textContent = "Confirm Cancellation";

@@ -374,7 +374,35 @@ body {
     box-shadow: 0 4px 12px rgba(65, 105, 225, 0.15);
 }
 
-.slot-unavailable {
+
+.slot.booked {
+    background: #fee2e2;
+    color: #7f1d1d;
+    border-color: #fecaca;
+    cursor: not-allowed;
+}
+
+.slot.blocked {
+    background: #fff7ed;
+    color: #9a3412;
+    border-color: #fed7aa;
+    cursor: not-allowed;
+}
+
+.slot.past {
+    background: #f1f5f9;
+    color: #64748b;
+    border-color: #e2e8f0;
+    cursor: not-allowed;
+}
+
+.slot .slot-label {
+    display: block;
+    margin-top: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: inherit;
+}.slot-unavailable {
     background: #f8f9fc;
     color: #cbd5e0;
     border-color: #e2e8f0;
@@ -689,64 +717,60 @@ async function loadSlots(dateString) {
     const slotsContainer = document.getElementById("slotsContainer");
     const alertDiv = document.getElementById("alert");
     
-    slotsContainer.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⏳</div><div class="empty-state-text">Loading available slots...</div></div>';
+    slotsContainer.innerHTML = '<div class="empty-state"><div class="empty-state-text">Loading slots...</div></div>';
     alertDiv.style.display = "none";
 
     try {
-        const res = await fetch(`/get_available_slots/${doctorId}/${dateString}`);
+        const res = await fetch(`/get_slots_status/${doctorId}/${dateString}`);
         if (!res.ok) throw new Error();
 
         const slots = await res.json();
-        
-        // --- NEW LOGIC: Filter out past slots for today ---
         const now = new Date();
         const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-        
-        let filteredSlots = slots;
-        
-        if (dateString === todayStr) {
-            filteredSlots = slots.filter(slot => {
-                // Assuming time_slot format is "HH:MM AM/PM" or "HH:MM"
-                // Converting time string to a Date object for comparison
+
+        if (!Array.isArray(slots) || slots.length === 0) {
+            slotsContainer.innerHTML = '<div class="empty-state"><div class="empty-state-text">No slots available for this date.</div></div>';
+            return;
+        }
+
+        slotsContainer.innerHTML = "";
+
+        slots.forEach(slot => {
+            const div = document.createElement("div");
+            div.className = "slot";
+            const status = (slot.status || "AVAILABLE").toUpperCase();
+
+            let isPast = false;
+            if (dateString === todayStr) {
                 const [time, modifier] = slot.time_slot.split(' ');
                 let [hours, minutes] = time.split(':');
-                
+
                 if (modifier === 'PM' && hours !== '12') {
                     hours = parseInt(hours, 10) + 12;
                 }
                 if (modifier === 'AM' && hours === '12') {
                     hours = '00';
                 }
-                
+
                 const slotTime = new Date();
                 slotTime.setHours(hours, minutes, 0, 0);
-                
-                // Return true only if slot time is in the future
-                return slotTime > now;
-            });
-        }
-        // --------------------------------------------------
-
-        if (filteredSlots.length === 0) {
-            slotsContainer.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔭</div><div class="empty-state-text">No available slots for this time</div></div>';
-            return;
-        }
-
-        slotsContainer.innerHTML = "";
-        
-        filteredSlots.forEach(slot => {
-            const div = document.createElement("div");
-            div.className = "slot";
-            
-            const isAvailable = slot.is_available !== false; 
-            
-            if (!isAvailable) {
-                div.classList.add("slot-unavailable");
+                isPast = slotTime <= now;
             }
-            
-            div.textContent = slot.time_slot;
 
-            if (isAvailable) {
+            const label = document.createElement("span");
+            label.className = "slot-label";
+
+            if (status === "BOOKED") {
+                div.classList.add("booked");
+                label.textContent = "Booked";
+            } else if (status === "BLOCKED") {
+                div.classList.add("blocked");
+                label.textContent = "Blocked by doctor";
+            } else if (isPast) {
+                div.classList.add("past");
+                label.textContent = "Unavailable";
+            } else {
+                label.textContent = "Available";
                 div.onclick = () => {
                     window.location.href =
                         `/appointment_page?doctor_id=${doctorId}` +
@@ -758,14 +782,16 @@ async function loadSlots(dateString) {
                 };
             }
 
+            div.textContent = slot.time_slot;
+            div.appendChild(label);
             slotsContainer.appendChild(div);
         });
 
     } catch (err) {
         console.error(err);
-        alertDiv.textContent = "❌ Failed to load slots.";
+        alertDiv.textContent = "Sorry, we could not load slots right now. Please try again.";
         alertDiv.style.display = "block";
-        slotsContainer.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-text">Error loading slots</div></div>';
+        slotsContainer.innerHTML = '<div class="empty-state"><div class="empty-state-text">Sorry, something went wrong while loading slots.</div></div>';
     }
 }
 
@@ -775,3 +801,4 @@ renderCalendar();
 
 </body>
 </html>
+

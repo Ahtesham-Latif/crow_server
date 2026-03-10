@@ -1,253 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin - Category & Doctor Management</title>
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; background: #f8f9fc; min-height: 100vh; }
-  .header { background: white; padding: 20px 40px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
-  .logo-container { display: flex; align-items: center; gap: 12px; }
-  .logo { width: 48px; height: 48px; background: #4169e1; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 28px; font-weight: bold; }
-  .logo-text h1 { font-size: 22px; color: #1a202c; margin-bottom: 0; font-weight: 600; }
-  .logo-text p { font-size: 13px; color: #718096; margin-top: 2px; }
-  .container { max-width: 900px; margin: 0 auto; padding: 40px; }
-  h2 { font-size: 28px; margin-bottom: 20px; color: #1a202c; }
-  form { background: white; padding: 24px; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 40px; }
-  label { display: block; font-weight: 600; margin-bottom: 6px; color: #1a202c; }
-  input, textarea, select { width: 100%; padding: 10px 12px; margin-bottom: 16px; border: 1px solid #cbd5e0; border-radius: 8px; font-size: 15px; }
-  button { padding: 12px 24px; font-size: 15px; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; }
-  .btn-add { background: #4169e1; color: white; margin-right: 12px; }
-  .btn-add:hover { background: #3557c7; }
-  .btn-delete { background: #ef4444; color: white; }
-  .btn-delete:hover { background: #dc2626; }
-  .list { margin-top: 20px; }
-  .item { background: white; padding: 12px 16px; margin-bottom: 12px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); gap: 12px; }
-  .item span { font-weight: 500; color: #1a202c; }
-  .item-details { flex: 1; }
-  .section-divider { height: 1px; background: #e2e8f0; margin: 24px 0 32px; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Category & Doctor Management</title>
+  <link rel="stylesheet" href="/assets/mind.css">
 </head>
 <body>
-
-<div class="header">
-  <div class="logo-container">
-    <div class="logo">A</div>
-    <div class="logo-text">
-      <h1>Admin Panel</h1>
-      <p>Category & Doctor Management</p>
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-mark">A</div>
+      <div class="brand-text">
+        <h1>Admin Panel</h1>
+        <p>Manage categories, assign doctors, and keep the directory organized.</p>
+      </div>
     </div>
-  </div>
-</div>
+  </header>
 
-<div class="container">
-  <h2>Add New Category</h2>
-  <form id="addCategoryForm">
-    <label for="category_name">Category Name</label>
-    <input type="text" id="category_name" name="category_name" required placeholder="e.g. Pediatrician">
-    
-    <label for="description">Description</label>
-    <textarea id="description" name="description" rows="3" required placeholder="Enter description"></textarea>
-    
-    <button type="submit" class="btn-add">Add Category</button>
-  </form>
+  <main class="layout">
+    <section class="panel">
+      <div class="panel-header">
+        <div>
+          <h2>Categories</h2>
+          <p>Select a category to add doctors by category and manage details.</p>
+        </div>
+        <span class="chip" id="selectedCategoryChip">All categories</span>
+      </div>
 
-  <h2>Existing Categories</h2>
-  <div id="categories" class="list">
-    <div class="loading">Loading categories...</div>
-  </div>
+      <div id="categoryList" class="category-list">
+        <div class="empty-state">Loading categories...</div>
+      </div>
 
-  <div class="section-divider"></div>
+      <form id="addCategoryForm" class="form-card">
+        <h3>Add Category</h3>
+        <label for="category_name">Category Name</label>
+        <input type="text" id="category_name" name="category_name" required placeholder="e.g. Pediatrician">
 
-  <h2>Add New Doctor</h2>
-  <form id="addDoctorForm">
-    <label for="doctor_name">Doctor Name</label>
-    <input type="text" id="doctor_name" name="doctor_name" required placeholder="e.g. Dr. Ahmed">
+        <label for="description">Description</label>
+        <textarea id="description" name="description" required placeholder="Enter description"></textarea>
 
-    <label for="phone">Phone</label>
-    <input type="text" id="phone" name="phone" required placeholder="e.g. 03001234567">
+        <div class="button-row">
+          <button type="submit" class="btn btn-primary">Add Category</button>
+        </div>
+      </form>
+    </section>
 
-    <label for="experience_years">Experience (Years)</label>
-    <input type="number" id="experience_years" name="experience_years" min="0" required placeholder="e.g. 8">
+    <section class="panel">
+      <div class="panel-header">
+        <div>
+          <h2>Doctors</h2>
+          <p>Add doctors in the selected category and review the full list.</p>
+        </div>
+      </div>
 
-    <label for="qualifications">Qualifications</label>
-    <input type="text" id="qualifications" name="qualifications" required placeholder="e.g. MBBS, FCPS">
+      <div id="categoryBox" class="info-card">
+        <h4>Category Box</h4>
+        <p>Select a category to see its details.</p>
+      </div>
 
-    <label for="ratings">Rating</label>
-    <input type="number" id="ratings" name="ratings" min="0" max="5" step="0.1" required placeholder="e.g. 4.5">
+      <form id="addDoctorForm" class="form-card">
+        <h3>Add Doctor By Category</h3>
+        <label for="doctor_name">Doctor Name</label>
+        <input type="text" id="doctor_name" name="doctor_name" required placeholder="e.g. Dr. Ahmed">
 
-    <label for="doctor_category_id">Category</label>
-    <select id="doctor_category_id" name="doctor_category_id" required>
-      <option value="">Select a category</option>
-    </select>
+        <label for="phone">Phone</label>
+        <input type="text" id="phone" name="phone" required placeholder="e.g. 03001234567">
 
-    <button type="submit" class="btn-add">Add Doctor</button>
-  </form>
+        <label for="experience_years">Experience (Years)</label>
+        <input type="number" id="experience_years" name="experience_years" min="0" required placeholder="e.g. 8">
 
-  <h2>Existing Doctors</h2>
-  <div id="doctors" class="list">
-    <div class="loading">Loading doctors...</div>
-  </div>
-</div>
+        <label for="qualifications">Qualifications</label>
+        <input type="text" id="qualifications" name="qualifications" required placeholder="e.g. MBBS, FCPS">
 
-<script>
-// Simple validation regex (letters, numbers, spaces)
-const safePattern = /^[a-zA-Z0-9\s]+$/;
-const safeDoctorPattern = /^[a-zA-Z0-9\s\.,-]+$/;
+        <label for="ratings">Rating</label>
+        <input type="number" id="ratings" name="ratings" min="0" max="5" step="0.1" required placeholder="e.g. 4.5">
 
-async function loadCategories() {
-  const container = document.getElementById("categories");
-  const categorySelect = document.getElementById("doctor_category_id");
-  try {
-    const res = await fetch("/get_categories");
-    if (!res.ok) throw new Error("Failed to fetch categories");
+        <label for="doctor_category_id">Category</label>
+        <select id="doctor_category_id" name="doctor_category_id" required>
+          <option value="">Select a category</option>
+        </select>
 
-    const categories = await res.json();
-    container.innerHTML = '';
-    categorySelect.innerHTML = '<option value="">Select a category</option>';
+        <div class="button-row">
+          <button type="submit" class="btn btn-primary">Add Doctor</button>
+        </div>
+      </form>
 
-    if (categories.length === 0) {
-      container.innerHTML = '<div class="loading">No categories available</div>';
-      categorySelect.innerHTML = '<option value="">No categories available</option>';
-      return;
-    }
+      <div class="form-card">
+        <div class="list-header">
+          <h3>Doctors By Category</h3>
+          <select id="doctorFilter">
+            <option value="">All categories</option>
+          </select>
+        </div>
+        <div id="doctorList" class="doctor-list">
+          <div class="empty-state">Loading doctors...</div>
+        </div>
+      </div>
+    </section>
+  </main>
 
-    categories.forEach(cat => {
-      const div = document.createElement("div");
-      div.className = "item";
-      div.innerHTML = `
-        <span class="item-details">${cat.category_name} - ${cat.description || 'No description'}</span>
-        <button class="btn-delete">Delete</button>
-      `;
-      div.querySelector(".btn-delete").onclick = async () => {
-        if(confirm(`Delete category "${cat.category_name}"?`)) {
-          const res = await fetch(`/delete_category/${cat.category_id}`, { method: "DELETE" });
-          if(res.ok) {
-            loadCategories();
-            loadDoctors();
-          }
-          else alert("Failed to delete category");
-        }
-      };
-      container.appendChild(div);
-
-      const option = document.createElement("option");
-      option.value = cat.category_id;
-      option.textContent = `${cat.category_name} (#${cat.category_id})`;
-      categorySelect.appendChild(option);
-    });
-
-  } catch (err) {
-    console.error(err);
-    container.innerHTML = '<div class="loading">Error loading categories</div>';
-    categorySelect.innerHTML = '<option value="">Error loading categories</option>';
-  }
-}
-
-async function loadDoctors() {
-  const container = document.getElementById("doctors");
-  try {
-    const res = await fetch("/get_doctors");
-    if (!res.ok) throw new Error("Failed to fetch doctors");
-
-    const doctors = await res.json();
-    container.innerHTML = '';
-
-    if (doctors.length === 0) {
-      container.innerHTML = '<div class="loading">No doctors available</div>';
-      return;
-    }
-
-    doctors.forEach(doc => {
-      const div = document.createElement("div");
-      div.className = "item";
-      div.innerHTML = `
-        <span class="item-details">
-          ${doc.doctor_name} | Exp: ${doc.experience_years}y | ${doc.qualifications || 'No qualification'} | Rating: ${doc.ratings || 'N/A'} | Category ID: ${doc.category_id}
-        </span>
-        <button class="btn-delete">Delete</button>
-      `;
-      div.querySelector(".btn-delete").onclick = async () => {
-        if(confirm(`Delete doctor "${doc.doctor_name}"?`)) {
-          const delRes = await fetch(`/delete_doctor/${doc.doctor_id}`, { method: "DELETE" });
-          if(delRes.ok) loadDoctors();
-          else alert("Failed to delete doctor");
-        }
-      };
-      container.appendChild(div);
-    });
-
-  } catch (err) {
-    console.error(err);
-    container.innerHTML = '<div class="loading">Error loading doctors</div>';
-  }
-}
-
-document.getElementById("addCategoryForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const name = document.getElementById("category_name").value.trim();
-  const desc = document.getElementById("description").value.trim();
-
-  if(!safePattern.test(name)) return alert("Category name contains invalid characters.");
-  if(!safePattern.test(desc.replace(/[\.,!?'"]/g, ''))) return alert("Description contains invalid characters.");
-
-  const res = await fetch("/add_category", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ category_name: name, description: desc })
-  });
-  const data = await res.json();
-  if(data.success) {
-    alert("Category added successfully!");
-    document.getElementById("addCategoryForm").reset();
-    loadCategories();
-  } else {
-    alert("Failed to add category");
-  }
-});
-
-document.getElementById("addDoctorForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  const doctorName = document.getElementById("doctor_name").value.trim();
-  const phone = document.getElementById("phone").value.trim();
-  const experienceYears = document.getElementById("experience_years").value.trim();
-  const qualifications = document.getElementById("qualifications").value.trim();
-  const ratings = document.getElementById("ratings").value.trim();
-  const categoryId = document.getElementById("doctor_category_id").value;
-
-  if(!safeDoctorPattern.test(doctorName)) return alert("Doctor name contains invalid characters.");
-  if(!/^[0-9+\-\s]{7,20}$/.test(phone)) return alert("Phone contains invalid characters.");
-  if(!safeDoctorPattern.test(qualifications)) return alert("Qualifications contain invalid characters.");
-  if(!categoryId) return alert("Please select a category.");
-
-  const res = await fetch("/add_doctor", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      doctor_name: doctorName,
-      phone: phone,
-      experience_years: experienceYears,
-      qualifications: qualifications,
-      ratings: Number(ratings),
-      category_id: Number(categoryId)
-    })
-  });
-
-  const data = await res.json();
-  if(data.success) {
-    alert("Doctor added successfully!");
-    document.getElementById("addDoctorForm").reset();
-    loadDoctors();
-  } else {
-    alert(data.message || "Failed to add doctor");
-  }
-});
-
-loadCategories();
-loadDoctors();
-</script>
-
+  <div id="toast" class="toast" role="status"></div>
+  <script type="module" src="/assets/mind.js"></script>
 </body>
 </html>

@@ -34,6 +34,7 @@ add_executable(server
     controllers/patient_controller.cpp
     controllers/appointment_controller.cpp
     controllers/cancellation_controller.cpp
+    controllers/page_controller.cpp
 )
 
 # ---- Libraries ----

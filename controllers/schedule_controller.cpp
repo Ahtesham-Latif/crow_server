@@ -125,7 +125,7 @@ void registerScheduleRoutes(crow::SimpleApp& app, sqlite3* db)
 
         if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
             std::cerr << "[ERROR] Prepare failed: " << sqlite3_errmsg(db) << std::endl;
-            return crow::response(500, "Database error");
+            return crow::response(500, "Sorry, we couldn't load the slots right now. Please try again.");
         }
 
         sqlite3_bind_int(stmt, 1, doctor_id);
@@ -148,6 +148,59 @@ void registerScheduleRoutes(crow::SimpleApp& app, sqlite3* db)
     });
 
     // --------------------------------------------------
+    // GET: All slots for a doctor on a given date with status
+    // --------------------------------------------------
+    CROW_ROUTE(app, "/get_slots_status/<int>/<string>").methods("GET"_method)
+    ([db](int doctor_id, const std::string& appointment_date)
+    {
+        const char* sql =
+            "SELECT ds.schedule_id, ds.time_slot, "
+            "       CASE "
+            "         WHEN EXISTS ("
+            "           SELECT 1 FROM Appointment a "
+            "           WHERE a.doctor_id = ? "
+            "             AND a.schedule_id = ds.schedule_id "
+            "             AND a.appointment_date = ? "
+            "             AND a.status = 'BOOKED' "
+            "         ) THEN 'BOOKED' "
+            "         WHEN EXISTS ("
+            "           SELECT 1 FROM Doctor_Blocked_Slots b "
+            "           WHERE b.doctor_id = ? "
+            "             AND b.schedule_id = ds.schedule_id "
+            "             AND b.appointment_date = ? "
+            "         ) THEN 'BLOCKED' "
+            "         ELSE 'AVAILABLE' "
+            "       END AS slot_status "
+            "FROM Doctor_Schedule ds "
+            "ORDER BY ds.time_slot;";
+
+        sqlite3_stmt* stmt = nullptr;
+        if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+            std::cerr << "[ERROR] Prepare failed: " << sqlite3_errmsg(db) << std::endl;
+            return crow::response(500, "Sorry, we couldn't load the slots right now. Please try again.");
+        }
+
+        sqlite3_bind_int(stmt, 1, doctor_id);
+        sqlite3_bind_text(stmt, 2, appointment_date.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_int(stmt, 3, doctor_id);
+        sqlite3_bind_text(stmt, 4, appointment_date.c_str(), -1, SQLITE_TRANSIENT);
+
+        crow::json::wvalue result;
+        int index = 0;
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            result[index]["schedule_id"] = sqlite3_column_int(stmt, 0);
+            result[index]["time_slot"] =
+                std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
+            result[index]["status"] =
+                std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
+            index++;
+        }
+        sqlite3_finalize(stmt);
+
+        return crow::response(200, result);
+    });
+
+    // --------------------------------------------------
     // GET: Appointment page
     // --------------------------------------------------
     CROW_ROUTE(app, "/appointment_page/<int>/<string>/<string>/<string>/<string>")
@@ -159,7 +212,7 @@ void registerScheduleRoutes(crow::SimpleApp& app, sqlite3* db)
     {
         std::ifstream file("../public/appointment.html");
         if (!file.is_open()) {
-            return crow::response(404, "Appointment page not found");
+            return crow::response(404, "Sorry, the appointment page is not available right now.");
         }
 
         std::stringstream buffer;
@@ -189,7 +242,7 @@ void registerScheduleRoutes(crow::SimpleApp& app, sqlite3* db)
     {
         auto body = crow::json::load(req.body);
         if (!body || !body.has("time_slot")) {
-            return crow::response(400, "Missing time_slot");
+            return crow::response(400, "Please provide a time slot.");
         }
 
         std::string time_slot = std::string(body["time_slot"].s());
@@ -199,21 +252,21 @@ void registerScheduleRoutes(crow::SimpleApp& app, sqlite3* db)
 
         sqlite3_stmt* stmt = nullptr;
         if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
-            return crow::response(500, sqlite3_errmsg(db));
+            return crow::response(500, "Sorry, we couldn't add the slot right now. Please try again.");
         }
 
         sqlite3_bind_text(stmt, 1, time_slot.c_str(), -1, SQLITE_STATIC);
 
         if (sqlite3_step(stmt) != SQLITE_DONE) {
             sqlite3_finalize(stmt);
-            return crow::response(500, "Failed to insert slot");
+            return crow::response(500, "Sorry, we couldn't add the slot right now. Please try again.");
         }
 
         sqlite3_finalize(stmt);
 
         crow::json::wvalue res;
         res["success"] = true;
-        res["message"] = "Slot added successfully";
+        res["message"] = "Slot added successfully.";
         return crow::response(200, res);
     });
 
@@ -225,7 +278,7 @@ void registerScheduleRoutes(crow::SimpleApp& app, sqlite3* db)
     {
         auto body = crow::json::load(req.body);
         if (!body || !body.has("doctor_id") || !body.has("schedule_id") || !body.has("appointment_date")) {
-            return crow::response(400, "Missing doctor_id, schedule_id or appointment_date");
+            return crow::response(400, "Please provide doctor_id, schedule_id, and appointment_date.");
         }
 
         int doctor_id = body["doctor_id"].i();
@@ -238,7 +291,7 @@ void registerScheduleRoutes(crow::SimpleApp& app, sqlite3* db)
             "LIMIT 1;";
         sqlite3_stmt* booked_stmt = nullptr;
         if (sqlite3_prepare_v2(db, booked_check_sql, -1, &booked_stmt, nullptr) != SQLITE_OK) {
-            return crow::response(500, sqlite3_errmsg(db));
+            return crow::response(500, "Sorry, we couldn't update the slot right now. Please try again.");
         }
         sqlite3_bind_int(booked_stmt, 1, doctor_id);
         sqlite3_bind_int(booked_stmt, 2, schedule_id);
@@ -246,7 +299,7 @@ void registerScheduleRoutes(crow::SimpleApp& app, sqlite3* db)
         bool already_booked = sqlite3_step(booked_stmt) == SQLITE_ROW;
         sqlite3_finalize(booked_stmt);
         if (already_booked) {
-            return crow::response(409, "Slot already booked for this date");
+            return crow::response(409, "Sorry, that slot is already booked for this date.");
         }
 
         const char* sql =
@@ -255,7 +308,7 @@ void registerScheduleRoutes(crow::SimpleApp& app, sqlite3* db)
 
         sqlite3_stmt* stmt = nullptr;
         if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
-            return crow::response(500, sqlite3_errmsg(db));
+            return crow::response(500, "Sorry, we couldn't update the slot right now. Please try again.");
         }
 
         sqlite3_bind_int(stmt, 1, doctor_id);
@@ -268,7 +321,7 @@ void registerScheduleRoutes(crow::SimpleApp& app, sqlite3* db)
 
         crow::json::wvalue res;
         res["success"] = blocked && changes > 0;
-        res["message"] = (blocked && changes > 0) ? "Slot blocked successfully" : "Slot already blocked";
+        res["message"] = (blocked && changes > 0) ? "Slot blocked successfully." : "That slot is already blocked.";
 
         return crow::response(blocked ? 200 : 409, res);
     });
@@ -282,7 +335,7 @@ void registerScheduleRoutes(crow::SimpleApp& app, sqlite3* db)
     {
         auto body = crow::json::load(req.body);
         if (!body || !body.has("doctor_name") || !body.has("phone")) {
-            return crow::response(400, "doctor_name and phone are required");
+            return crow::response(400, "Please provide both doctor_name and phone.");
         }
 
         std::string doctor_name = body["doctor_name"].s();
@@ -297,7 +350,7 @@ void registerScheduleRoutes(crow::SimpleApp& app, sqlite3* db)
 
         sqlite3_stmt* stmt = nullptr;
         if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
-            return crow::response(500, "Database error");
+            return crow::response(500, "Sorry, we couldn't verify you right now. Please try again.");
         }
 
         sqlite3_bind_text(stmt, 1, doctor_name.c_str(), -1, SQLITE_TRANSIENT);
@@ -313,7 +366,7 @@ void registerScheduleRoutes(crow::SimpleApp& app, sqlite3* db)
         sqlite3_finalize(stmt);
 
         if (doctor_id <= 0) {
-            return crow::response(401, "Verification failed. Check name and phone.");
+            return crow::response(401, "Sorry, we could not verify those details. Please check and try again.");
         }
 
         const auto expires_at = std::chrono::system_clock::now() + std::chrono::hours(12);
@@ -329,7 +382,7 @@ void registerScheduleRoutes(crow::SimpleApp& app, sqlite3* db)
         res["token"] = token;
         res["doctor_id"] = doctor_id;
         res["doctor_name"] = matched_name;
-        res["message"] = "Verification successful";
+        res["message"] = "Verification successful.";
 
         return crow::response(200, res);
     });
@@ -344,7 +397,7 @@ void registerScheduleRoutes(crow::SimpleApp& app, sqlite3* db)
         const int doctor_id = doctorIdFromToken(token);
 
         if (doctor_id <= 0) {
-            return crow::response(401, "Unauthorized: invalid or expired token");
+            return crow::response(401, "Please verify your session and try again.");
         }
 
         const char* sql =
@@ -370,7 +423,7 @@ void registerScheduleRoutes(crow::SimpleApp& app, sqlite3* db)
 
         sqlite3_stmt* stmt = nullptr;
         if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
-            return crow::response(500, "Database error");
+            return crow::response(500, "Sorry, we couldn't load the slots right now. Please try again.");
         }
 
         sqlite3_bind_int(stmt, 1, doctor_id);
@@ -401,14 +454,14 @@ void registerScheduleRoutes(crow::SimpleApp& app, sqlite3* db)
     {
         auto body = crow::json::load(req.body);
         if (!body || !body.has("schedule_id") || !body.has("appointment_date")) {
-            return crow::response(400, "schedule_id and appointment_date are required");
+            return crow::response(400, "Please provide schedule_id and appointment_date.");
         }
 
         const std::string token = getTokenFromRequest(req, body);
         const int doctor_id = doctorIdFromToken(token);
 
         if (doctor_id <= 0) {
-            return crow::response(401, "Unauthorized: invalid or expired token");
+            return crow::response(401, "Please verify your session and try again.");
         }
 
         int schedule_id = body["schedule_id"].i();
@@ -420,7 +473,7 @@ void registerScheduleRoutes(crow::SimpleApp& app, sqlite3* db)
             "LIMIT 1;";
         sqlite3_stmt* booked_stmt = nullptr;
         if (sqlite3_prepare_v2(db, booked_check_sql, -1, &booked_stmt, nullptr) != SQLITE_OK) {
-            return crow::response(500, "Database error");
+            return crow::response(500, "Sorry, we couldn't update the slot right now. Please try again.");
         }
         sqlite3_bind_int(booked_stmt, 1, doctor_id);
         sqlite3_bind_int(booked_stmt, 2, schedule_id);
@@ -428,7 +481,7 @@ void registerScheduleRoutes(crow::SimpleApp& app, sqlite3* db)
         bool already_booked = sqlite3_step(booked_stmt) == SQLITE_ROW;
         sqlite3_finalize(booked_stmt);
         if (already_booked) {
-            return crow::response(409, "Slot already booked for this date");
+            return crow::response(409, "Sorry, that slot is already booked for this date.");
         }
 
         const char* sql =
@@ -437,7 +490,7 @@ void registerScheduleRoutes(crow::SimpleApp& app, sqlite3* db)
 
         sqlite3_stmt* stmt = nullptr;
         if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
-            return crow::response(500, "Database error");
+            return crow::response(500, "Sorry, we couldn't update the slot right now. Please try again.");
         }
 
         sqlite3_bind_int(stmt, 1, doctor_id);
@@ -449,12 +502,12 @@ void registerScheduleRoutes(crow::SimpleApp& app, sqlite3* db)
         sqlite3_finalize(stmt);
 
         if (!ok) {
-            return crow::response(409, "Slot cannot be blocked");
+            return crow::response(409, "Sorry, that slot cannot be blocked right now.");
         }
 
         crow::json::wvalue res;
         res["success"] = changes > 0;
-        res["message"] = (changes > 0) ? "Slot blocked" : "Slot already blocked";
+        res["message"] = (changes > 0) ? "Slot blocked." : "That slot is already blocked.";
         return crow::response(200, res);
     });
 
@@ -466,14 +519,14 @@ void registerScheduleRoutes(crow::SimpleApp& app, sqlite3* db)
     {
         auto body = crow::json::load(req.body);
         if (!body || !body.has("schedule_id") || !body.has("appointment_date")) {
-            return crow::response(400, "schedule_id and appointment_date are required");
+            return crow::response(400, "Please provide schedule_id and appointment_date.");
         }
 
         const std::string token = getTokenFromRequest(req, body);
         const int doctor_id = doctorIdFromToken(token);
 
         if (doctor_id <= 0) {
-            return crow::response(401, "Unauthorized: invalid or expired token");
+            return crow::response(401, "Please verify your session and try again.");
         }
 
         int schedule_id = body["schedule_id"].i();
@@ -487,7 +540,7 @@ void registerScheduleRoutes(crow::SimpleApp& app, sqlite3* db)
 
         sqlite3_stmt* stmt = nullptr;
         if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
-            return crow::response(500, "Database error");
+            return crow::response(500, "Sorry, we couldn't update the slot right now. Please try again.");
         }
 
         sqlite3_bind_int(stmt, 1, doctor_id);
@@ -500,7 +553,7 @@ void registerScheduleRoutes(crow::SimpleApp& app, sqlite3* db)
 
         crow::json::wvalue res;
         res["success"] = ok && changes > 0;
-        res["message"] = (ok && changes > 0) ? "Slot unblocked" : "No blocked slot found";
+        res["message"] = (ok && changes > 0) ? "Slot unblocked." : "No blocked slot was found.";
         return crow::response((ok && changes > 0) ? 200 : 404, res);
     });
 }

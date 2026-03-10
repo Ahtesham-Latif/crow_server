@@ -533,7 +533,7 @@ async function loadCategories() {
     const container = document.getElementById("categories");
     try {
         const res = await fetch("/get_categories");
-        if (!res.ok) throw new Error("Failed to fetch categories");
+        if (!res.ok) throw new Error("Sorry, we could not load categories right now");
 
         const categories = await res.json();
         container.innerHTML = '';
@@ -566,7 +566,7 @@ async function loadCategories() {
 
     } catch (err) {
         console.error(err);
-        container.innerHTML = '<div class="error">Failed to load categories. Please try again later.</div>';
+        container.innerHTML = '<div class="error">Sorry, we could not load categories right now. Please try again.</div>';
     }
 }
 

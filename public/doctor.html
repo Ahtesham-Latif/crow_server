@@ -369,7 +369,7 @@ async function fetchDoctors(){
     container.innerHTML = '<div class="loading">Loading doctors...</div>';
     try{
         const res = await fetch(`/get_doctors?category_id=${categoryId}`);
-        if(!res.ok) throw new Error("Failed to fetch doctors");
+        if(!res.ok) throw new Error("Sorry, we could not load doctors right now");
         const doctors = await res.json();
         container.innerHTML = "";
         if(doctors.length === 0){
@@ -435,7 +435,7 @@ async function fetchDoctors(){
         container.appendChild(grid);
     }catch(err){
         console.error(err);
-        container.innerHTML = '<div class="error">Error loading doctors. Please try again later.</div>';
+        container.innerHTML = '<div class="error">Sorry, we could not load doctors right now. Please try again.</div>';
     }
 }
 

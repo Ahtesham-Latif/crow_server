@@ -249,6 +249,15 @@ function showStatus(message, ok) {
     statusBox.textContent = message;
 }
 
+async function readPoliteError(res, fallback) {
+    try {
+        const data = await res.json();
+        return data.message || fallback;
+    } catch (err) {
+        return fallback;
+    }
+}
+
 function renderSlots(slots, selectedDate) {
     slotsBox.innerHTML = "";
     slotsBox.classList.remove("hidden");
@@ -284,10 +293,10 @@ function renderSlots(slots, selectedDate) {
                     body: JSON.stringify({ token, schedule_id: slot.schedule_id, appointment_date: selectedDate })
                 });
                 if (res.ok) {
-                    showStatus("Slot blocked.", true);
+                    showStatus("Slot blocked successfully.", true);
                     await loadSlots();
                 } else {
-                    showStatus(await res.text(), false);
+                    showStatus(await readPoliteError(res, "Sorry, we could not block the slot. Please try again."), false);
                 }
             };
             actionContainer.appendChild(btn);
@@ -304,10 +313,10 @@ function renderSlots(slots, selectedDate) {
                     body: JSON.stringify({ token, schedule_id: slot.schedule_id, appointment_date: selectedDate })
                 });
                 if (res.ok) {
-                    showStatus("Slot unblocked.", true);
+                    showStatus("Slot unblocked successfully.", true);
                     await loadSlots();
                 } else {
-                    showStatus(await res.text(), false);
+                    showStatus(await readPoliteError(res, "Sorry, we could not unblock the slot. Please try again."), false);
                 }
             };
             actionContainer.appendChild(btn);
@@ -332,7 +341,7 @@ async function loadSlots() {
 
     const res = await fetch(`/doctor_dashboard/slots/${selectedDateISO}?token=${encodeURIComponent(token)}`);
     if (!res.ok) {
-        showStatus(await res.text(), false);
+        showStatus(await readPoliteError(res, "Sorry, we could not load slots right now. Please try again."), false);
         return;
     }
 
@@ -418,7 +427,7 @@ verifyForm.addEventListener("submit", async (e) => {
     });
 
     if (!res.ok) {
-        showStatus(await res.text(), false);
+        showStatus(await readPoliteError(res, "Sorry, we could not verify those details. Please try again."), false);
         return;
     }
 

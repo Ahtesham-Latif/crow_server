@@ -19,7 +19,7 @@ void registerCategoryRoutes(crow::SimpleApp& app, sqlite3* db) {
 
     if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
         cerr << "Prepare failed: " << sqlite3_errmsg(db) << endl;
-        return crow::response(500, "Database error");
+        return crow::response(500, "Sorry, we couldn't load the categories right now. Please try again.");
     }
 
     crow::json::wvalue result;
@@ -50,7 +50,7 @@ void registerCategoryRoutes(crow::SimpleApp& app, sqlite3* db) {
     auto body = crow::json::load(req.body);
 
     if (!body || !body.has("category_name") || !body.has("description")) {
-        return crow::response(400, "Missing category_name or description");
+        return crow::response(400, "Please provide a category name and description.");
     }
 
     string name = body["category_name"].s();
@@ -61,7 +61,7 @@ void registerCategoryRoutes(crow::SimpleApp& app, sqlite3* db) {
     crow::json::wvalue response;
     response["success"] = inserted;
     response["message"] =
-        inserted ? "Category added successfully!" : "Failed to insert category.";
+        inserted ? "Category added successfully." : "Sorry, we could not add that category right now.";
 
     return crow::response(200, response);
 });
@@ -70,7 +70,7 @@ void registerCategoryRoutes(crow::SimpleApp& app, sqlite3* db) {
 ([db](const crow::request& req, int category_id) {
 
     if (category_id <= 0) {
-        return crow::response(400, "Invalid category_id");
+        return crow::response(400, "Please provide a valid category_id.");
     }
 
     bool deleted = Category::remove(db, category_id);
@@ -78,8 +78,8 @@ void registerCategoryRoutes(crow::SimpleApp& app, sqlite3* db) {
     crow::json::wvalue response;
     response["success"] = deleted;
     response["message"] =
-        deleted ? "Category deleted successfully!"
-                : "Category not found or already deleted.";
+        deleted ? "Category deleted successfully."
+                : "Sorry, that category was not found or has already been deleted.";
 
     return crow::response(200, response);
 });

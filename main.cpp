@@ -1,8 +1,6 @@
 #include <crow.h>
 #include <sqlite3.h>
 #include <iostream>
-#include <fstream>
-#include <sstream>
 using namespace std;
 
 // Controllers
@@ -11,26 +9,7 @@ using namespace std;
 #include "controllers/schedule_controller.h"
 #include "controllers/appointment_controller.h"
 #include "controllers/cancellation_controller.h"
-
-// -------------------------------------------------
-// Helper: Serve static HTML files
-// -------------------------------------------------
-crow::response serveFile(const std::string& path) {
-    std::ifstream file(path);
-    crow::response res;
-
-    if (!file.is_open()) {
-        res.code = 404;
-        res.write("File not found!");
-        return res;
-    }
-
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-    res.set_header("Content-Type", "text/html");
-    res.write(buffer.str());
-    return res;
-}
+#include "controllers/page_controller.h"
 
 int main() {
     crow::SimpleApp app;
@@ -47,19 +26,9 @@ int main() {
         return 1;
     }
     // -------------------------------------------------
-    // Serve static HTML pages
-    // -------------------------------------------------
-    CROW_ROUTE(app, "/categories_page")([]() { return serveFile("../public/category.html"); });
-    CROW_ROUTE(app, "/doctors_page")([]() { return serveFile("../public/doctor.html"); });
-    CROW_ROUTE(app, "/schedule_page")([]() { return serveFile("../public/schedule.html"); });
-    CROW_ROUTE(app, "/appointment_page")([]() { return serveFile("../public/appointment.html"); });
-    CROW_ROUTE(app, "/confirmation_page")([]() { return serveFile("../public/confirmation.html"); });
-    CROW_ROUTE(app, "/cancel_appointment_page")([]() { return serveFile("../public/cancellation.html"); });
-    CROW_ROUTE(app, "/doctor_dashboard_page")([]() { return serveFile("../public/doctor_dashboard.html"); });
-    CROW_ROUTE(app, "/controller(mind)")([]() { return serveFile("../public/mind.html"); });
-    // -------------------------------------------------
     // API routes (MVC controllers)
     // -------------------------------------------------
+    registerPageRoutes(app);
     registerCategoryRoutes(app, db);
     registerDoctorRoutes(app, db);
     registerScheduleRoutes(app, db);

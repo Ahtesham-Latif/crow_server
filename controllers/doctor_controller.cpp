@@ -33,7 +33,7 @@ void registerDoctorRoutes(crow::SimpleApp& app, sqlite3* db) {
 
         if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
             std::cerr << "SQL error: " << sqlite3_errmsg(db) << std::endl;
-            return crow::response(500, "Database error");
+            return crow::response(500, "Sorry, we couldn't load the doctors right now. Please try again.");
         }
 
         if (query) {
@@ -68,7 +68,7 @@ void registerDoctorRoutes(crow::SimpleApp& app, sqlite3* db) {
 
         auto body = crow::json::load(req.body);
         if (!body) {
-            return crow::response(400, "Invalid JSON");
+            return crow::response(400, "Please send a valid request.");
         }
 
         if (!body.has("doctor_name") ||
@@ -77,7 +77,7 @@ void registerDoctorRoutes(crow::SimpleApp& app, sqlite3* db) {
             !body.has("qualifications") ||
             !body.has("ratings") ||
             !body.has("category_id")) {
-            return crow::response(400, "Missing required fields");
+            return crow::response(400, "Please fill in all required fields.");
         }
 
         // Extract fields
@@ -94,7 +94,7 @@ void registerDoctorRoutes(crow::SimpleApp& app, sqlite3* db) {
         crow::json::wvalue response;
         response["success"] = inserted;
         response["message"] =
-            inserted ? "Doctor added successfully!" : "Failed to add doctor.";
+            inserted ? "Doctor added successfully." : "Sorry, we could not add that doctor right now.";
 
         return crow::response(200, response);
     });
@@ -106,7 +106,7 @@ void registerDoctorRoutes(crow::SimpleApp& app, sqlite3* db) {
     ([db](const crow::request& req, int doctor_id) {
 
         if (doctor_id <= 0) {
-            return crow::response(400, "Invalid doctor_id");
+            return crow::response(400, "Please provide a valid doctor_id.");
         }
 
         bool deleted = Doctor::remove(db, doctor_id);
@@ -114,8 +114,8 @@ void registerDoctorRoutes(crow::SimpleApp& app, sqlite3* db) {
         crow::json::wvalue response;
         response["success"] = deleted;
         response["message"] =
-            deleted ? "Doctor deleted successfully!"
-                    : "Doctor not found or already deleted.";
+            deleted ? "Doctor deleted successfully."
+                    : "Sorry, that doctor was not found or has already been deleted.";
 
         return crow::response(200, response);
     });

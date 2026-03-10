@@ -9,10 +9,12 @@
 #include <iostream>
 #include <thread>
 
-static bool isSlotAlreadyBooked(sqlite3* db, int doctor_id, int schedule_id)
+static bool isSlotAlreadyBooked(sqlite3* db, int doctor_id, int schedule_id, const std::string& appointment_date)
 {
     const char* sql =
-        "SELECT 1 FROM Appointment WHERE doctor_id = ? AND schedule_id = ? LIMIT 1";
+        "SELECT 1 FROM Appointment "
+        "WHERE doctor_id = ? AND schedule_id = ? AND appointment_date = ? AND status = 'BOOKED' "
+        "LIMIT 1";
 
     sqlite3_stmt* stmt = nullptr;
     if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
@@ -22,10 +24,33 @@ static bool isSlotAlreadyBooked(sqlite3* db, int doctor_id, int schedule_id)
 
     sqlite3_bind_int(stmt, 1, doctor_id);
     sqlite3_bind_int(stmt, 2, schedule_id);
+    sqlite3_bind_text(stmt, 3, appointment_date.c_str(), -1, SQLITE_TRANSIENT);
 
     bool booked = (sqlite3_step(stmt) == SQLITE_ROW);
     sqlite3_finalize(stmt);
     return booked;
+}
+
+static bool isSlotBlocked(sqlite3* db, int doctor_id, int schedule_id, const std::string& appointment_date)
+{
+    const char* sql =
+        "SELECT 1 FROM Doctor_Blocked_Slots "
+        "WHERE doctor_id = ? AND schedule_id = ? AND appointment_date = ? "
+        "LIMIT 1";
+
+    sqlite3_stmt* stmt = nullptr;
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+        // fail-safe: treat as blocked
+        return true;
+    }
+
+    sqlite3_bind_int(stmt, 1, doctor_id);
+    sqlite3_bind_int(stmt, 2, schedule_id);
+    sqlite3_bind_text(stmt, 3, appointment_date.c_str(), -1, SQLITE_TRANSIENT);
+
+    bool blocked = (sqlite3_step(stmt) == SQLITE_ROW);
+    sqlite3_finalize(stmt);
+    return blocked;
 }
 
 void registerAppointmentRoutes(crow::SimpleApp& app, sqlite3* db)
@@ -35,7 +60,7 @@ void registerAppointmentRoutes(crow::SimpleApp& app, sqlite3* db)
     {
         auto body = crow::json::load(req.body);
         if (!body) {
-            return crow::response(400, "Invalid JSON body");
+            return crow::response(400, "Please send a valid request.");
         }
 
         // --- Required fields ---
@@ -43,7 +68,7 @@ void registerAppointmentRoutes(crow::SimpleApp& app, sqlite3* db)
             !body.has("gender") || !body.has("doctor_name") ||
             !body.has("date") || !body.has("time_slot"))
         {
-            return crow::response(400, "Missing required fields");
+            return crow::response(400, "Please fill in all required fields.");
         }
 
         std::string name              = body["name"].s();
@@ -75,7 +100,7 @@ if (body.has("request")) {
             "SELECT doctor_id FROM Doctor WHERE doctor_name = ?";
 
         if (sqlite3_prepare_v2(db, sql_doctor, -1, &stmt, nullptr) != SQLITE_OK) {
-            return crow::response(500, sqlite3_errmsg(db));
+            return crow::response(500, "Sorry, we couldn't complete your request right now. Please try again.");
         }
 
         sqlite3_bind_text(stmt, 1, doctor_name.c_str(), -1, SQLITE_STATIC);
@@ -85,7 +110,7 @@ if (body.has("request")) {
         sqlite3_finalize(stmt);
 
         if (doctor_id == -1) {
-            return crow::response(400, "Doctor not found");
+            return crow::response(400, "Sorry, we could not find that doctor. Please choose another.");
         }
 
         std::cout << "[DEBUG] Doctor ID found: " << doctor_id << "\n";
@@ -96,7 +121,7 @@ if (body.has("request")) {
             "SELECT schedule_id FROM Doctor_Schedule WHERE time_slot = ?";
 
         if (sqlite3_prepare_v2(db, sql_schedule, -1, &stmt, nullptr) != SQLITE_OK) {
-            return crow::response(500, sqlite3_errmsg(db));
+            return crow::response(500, "Sorry, we couldn't complete your request right now. Please try again.");
         }
 
         sqlite3_bind_text(stmt, 1, time_slot.c_str(), -1, SQLITE_STATIC);
@@ -106,14 +131,17 @@ if (body.has("request")) {
         sqlite3_finalize(stmt);
 
         if (schedule_id == -1) {
-            return crow::response(400, "Invalid time slot");
+            return crow::response(400, "Please select a valid time slot.");
         }
 
         std::cout << "[DEBUG] Schedule ID found: " << schedule_id << "\n";
 
         // --- Step 3: Slot safety check ---
-        if (isSlotAlreadyBooked(db, doctor_id, schedule_id)) {
-            return crow::response(409, "This slot is already booked");
+        if (isSlotBlocked(db, doctor_id, schedule_id, appointment_date)) {
+            return crow::response(409, "Sorry, that slot is blocked by the doctor for this date.");
+        }
+        if (isSlotAlreadyBooked(db, doctor_id, schedule_id, appointment_date)) {
+            return crow::response(409, "Sorry, that slot has already been booked.");
         }
 
         // --- Step 4: Generate unique patient_id ---
@@ -126,7 +154,7 @@ if (body.has("request")) {
 
         // --- Step 5: Insert patient ---
         if (!Patient::insert(db, patient_id, name, age, email, gender, request)) {
-            return crow::response(500, "Failed to insert patient");
+            return crow::response(500, "Sorry, we couldn't save your details right now. Please try again.");
         }
 
         std::cout << "[DEBUG] Patient inserted successfully\n";
@@ -148,7 +176,7 @@ if (body.has("request")) {
                 schedule_id,
                 appointment_date))
         {
-            return crow::response(500, "Failed to insert appointment");
+            return crow::response(500, "Sorry, we couldn't finalize the appointment. Please try again.");
         }
 
         std::cout << "[DEBUG] Appointment inserted successfully\n";
@@ -156,7 +184,7 @@ if (body.has("request")) {
         // --- Step 8: Response ---
         crow::json::wvalue res;
         res["success"]        = true;
-        res["message"]        = "Appointment booked successfully";
+        res["message"]        = "Appointment booked successfully.";
         res["patient_id"]     = patient_id;
         res["appointment_id"] = appointment_id;
 

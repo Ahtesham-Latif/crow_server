@@ -20,7 +20,7 @@
 </head>
 <body>
     <div class="container">
-        <h2>📝 Booking Details</h2>
+        <h2>Booking Details</h2>
         <div class="details-summary">
             <strong>Doctor:</strong> <span id="summary_doctor"></span><br>
             <strong>Date:</strong> <span id="summary_date"></span><br>
@@ -144,7 +144,7 @@
             const schedIdVal = parseInt(scheduleId);
 
             if (isNaN(ageVal) || isNaN(schedIdVal)) {
-                errorDiv.textContent = "❌ Error: Invalid numeric data (Age or Schedule ID).";
+                errorDiv.textContent = "Sorry, the age or schedule ID looks invalid. Please check and try again.";
                 btn.disabled = false;
                 btn.textContent = "Confirm Appointment";
                 return;
@@ -184,7 +184,10 @@
                 try {
                     result = JSON.parse(text);
                 } catch (e) {
-                    throw new Error("Server returned non-JSON response: " + text);
+                    console.error("Non-JSON response:", text);
+                    const err = new Error("Sorry, we could not complete the booking. Please try again.");
+                    err.userMessage = err.message;
+                    throw err;
                 }
 
                 if (response.ok && result.success) {
@@ -198,11 +201,13 @@
                     successUrl.searchParams.set("time", apptTime);
                     window.location.href = successUrl.toString();
                 } else {
-                    throw new Error(result.message || "Booking failed.");
+                    const err = new Error(result.message || "Sorry, we could not complete the booking. Please try again.");
+                    err.userMessage = err.message;
+                    throw err;
                 }
             } catch (err) {
                 console.error("Fetch error:", err);
-                errorDiv.textContent = "❌ " + err.message;
+                errorDiv.textContent = err.userMessage || "Sorry, we could not complete the booking. Please try again.";
                 btn.disabled = false;
                 btn.textContent = "Confirm Appointment";
             }
@@ -210,3 +215,5 @@
     </script>
 </body>
 </html>
+
+
