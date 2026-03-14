@@ -1,5 +1,6 @@
 #include "patient_controller.h"
 #include "../models/patient.h"
+#include "../services/public_session.h"
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
@@ -18,6 +19,9 @@ void registerPatientRoutes(crow::SimpleApp& app, sqlite3* db) {
     // ---------------------------------
     CROW_ROUTE(app, "/add_patient").methods("POST"_method)
     ([db](const crow::request& req) {
+        if (!publicSessionValid(req)) {
+            return crow::response(401, "Please refresh and try again.");
+        }
 
         auto body = crow::json::load(req.body);
         if (!body || !body.has("name") || !body.has("age")

@@ -367,6 +367,29 @@ body {
     transition: all 0.2s;
 }
 
+.slot.skeleton {
+    color: transparent;
+    background: #e2e8f0;
+    border-color: #e2e8f0;
+    position: relative;
+    overflow: hidden;
+    pointer-events: none;
+}
+.slot.skeleton::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -150px;
+    width: 150px;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+    animation: shimmer 1.4s infinite;
+}
+@keyframes shimmer {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(300px); }
+}
+
 .slot:hover {
     border-color: #4169e1;
     background: #f0f4ff;
@@ -613,17 +636,38 @@ body {
 </div>
 
 <script>
-const params = new URLSearchParams(window.location.search);
-const doctorId = params.get("doctor_id");
-const doctorName = params.get("doctor");
-const categoryName = params.get("category_name");
-const doctorRating = params.get("rating");
-const doctorExperience = params.get("experience");
+let doctorId = null;
+let scheduleContext = null;
+let publicSessionReady = false;
+let publicSessionPromise = null;
 
-document.getElementById("doctorName").textContent = decodeURIComponent(doctorName);
-document.getElementById("categoryName").textContent = decodeURIComponent(categoryName);
-document.getElementById("doctorRating").textContent = params.get("rating") || "N/A";
-document.getElementById("doctorExperience").textContent = (params.get("experience") || "N/A") + " Years Exp.";
+async function ensurePublicSession() {
+    if (publicSessionReady) return;
+    if (publicSessionPromise) return publicSessionPromise;
+    publicSessionPromise = fetch("/public_session", { credentials: "same-origin" })
+        .then(() => {
+            publicSessionReady = true;
+        })
+        .catch((err) => {
+            console.error(err);
+            publicSessionReady = false;
+        })
+        .finally(() => { publicSessionPromise = null; });
+    return publicSessionPromise;
+}
+
+async function loadScheduleContext() {
+    const res = await fetch("/schedule_context", { credentials: "same-origin" });
+    if (!res.ok) throw new Error("Sorry, we could not load the schedule right now.");
+    const data = await res.json();
+    doctorId = data.doctor_id;
+    scheduleContext = data;
+    document.getElementById("doctorName").textContent = data.doctor_name || "Doctor";
+    document.getElementById("categoryName").textContent = data.category_name || "General";
+    document.getElementById("doctorRating").textContent = data.ratings ?? "N/A";
+    document.getElementById("doctorExperience").textContent =
+        (data.experience_years || "N/A") + " Years Exp.";
+}
 
 // Calendar state
 let currentDate = new Date();
@@ -717,10 +761,13 @@ async function loadSlots(dateString) {
     const slotsContainer = document.getElementById("slotsContainer");
     const alertDiv = document.getElementById("alert");
     
-    slotsContainer.innerHTML = '<div class="empty-state"><div class="empty-state-text">Loading slots...</div></div>';
+    renderSlotsSkeleton(slotsContainer, 12);
     alertDiv.style.display = "none";
 
     try {
+        if (!doctorId) {
+            throw new Error("Doctor not found.");
+        }
         const res = await fetch(`/get_slots_status/${doctorId}/${dateString}`);
         if (!res.ok) throw new Error();
 
@@ -771,14 +818,37 @@ async function loadSlots(dateString) {
                 label.textContent = "Unavailable";
             } else {
                 label.textContent = "Available";
-                div.onclick = () => {
-                    window.location.href =
-                        `/appointment_page?doctor_id=${doctorId}` +
-                        `&doctor=${encodeURIComponent(doctorName)}` +
-                        `&category_name=${encodeURIComponent(categoryName)}` +
-                        `&date=${dateString}` +
-                        `&slot=${encodeURIComponent(slot.time_slot)}` +
-                        `&schedule_id=${slot.schedule_id}`;
+                div.onclick = async () => {
+                    try {
+                        if (!scheduleContext) {
+                            throw new Error("Doctor not found.");
+                        }
+
+                        const payload = {
+                            doctor_id: scheduleContext.doctor_id,
+                            doctor_name: scheduleContext.doctor_name,
+                            category_name: scheduleContext.category_name,
+                            date: dateString,
+                            time_slot: slot.time_slot
+                        };
+
+                        const resp = await fetch('/booking_context', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (!resp.ok) {
+                            const msg = await resp.text();
+                            throw new Error(msg || "Sorry, we couldn't start the booking. Please try again.");
+                        }
+
+                        window.location.href = "/appointment_page";
+                    } catch (err) {
+                        console.error(err);
+                        alertDiv.textContent = err.message || "Sorry, we couldn't start the booking. Please try again.";
+                        alertDiv.style.display = "block";
+                    }
                 };
             }
 
@@ -795,8 +865,31 @@ async function loadSlots(dateString) {
     }
 }
 
+function renderSlotsSkeleton(container, count) {
+    container.innerHTML = "";
+    for (let i = 0; i < count; i++) {
+        const div = document.createElement("div");
+        div.className = "slot skeleton";
+        div.textContent = "00:00";
+        container.appendChild(div);
+    }
+}
+
 // Initialize calendar on load
-renderCalendar();
+async function initSchedule() {
+    try {
+        await ensurePublicSession();
+        await loadScheduleContext();
+        renderCalendar();
+    } catch (err) {
+        console.error(err);
+        const alertDiv = document.getElementById("alert");
+        alertDiv.textContent = "Sorry, we could not load this schedule right now. Please go back and try again.";
+        alertDiv.style.display = "block";
+    }
+}
+
+initSchedule();
 </script>
 
 </body>

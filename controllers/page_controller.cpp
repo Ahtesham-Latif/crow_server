@@ -1,4 +1,5 @@
 #include "page_controller.h"
+#include "../services/public_session.h"
 
 #include <fstream>
 #include <sstream>
@@ -43,6 +44,13 @@ crow::response serveFile(const std::string& path) {
 
 void registerPageRoutes(crow::SimpleApp& app)
 {
+    CROW_ROUTE(app, "/public_session").methods("GET"_method)
+    ([](const crow::request& req) {
+        crow::response res(204);
+        issuePublicSession(res);
+        return res;
+    });
+
     CROW_ROUTE(app, "/categories_page")([]() { return serveFile("../public/category.html"); });
     CROW_ROUTE(app, "/doctors_page")([]() { return serveFile("../public/doctor.html"); });
     CROW_ROUTE(app, "/schedule_page")([]() { return serveFile("../public/schedule.html"); });

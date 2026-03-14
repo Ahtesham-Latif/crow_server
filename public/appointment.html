@@ -99,52 +99,96 @@
             ]
         };
 
-        // 1. Get Params from URL
-        const params = new URLSearchParams(window.location.search);
-        const doctorName = decodeURIComponent(params.get("doctor") || "Doctor");
-        const apptDate = params.get("date") || "";
-        const apptTime = decodeURIComponent(params.get("slot") || "");
-        const scheduleId = params.get("schedule_id");
-        const categoryName = params.get("category_name");
-
-        // 2. Display Summary
-        document.getElementById("summary_doctor").textContent = doctorName;
-        document.getElementById("summary_date").textContent = apptDate;
-        document.getElementById("summary_time").textContent = apptTime;
-
-        // 3. Populate Reason for Visit based on category
         const reasonSelect = document.getElementById("reasonVisit");
-        if (categoryName && reasonsByCategory[categoryName]) {
-            reasonsByCategory[categoryName].forEach(reason => {
-                const option = document.createElement('option');
-                option.value = reason;
-                option.textContent = reason;
-                reasonSelect.appendChild(option);
-            });
-        } else {
-            // Fallback if category not found
-            const option = document.createElement('option');
-            option.value = "General Consultation";
-            option.textContent = "General Consultation";
-            reasonSelect.appendChild(option);
+        const errorDiv = document.getElementById("errorMsg");
+        const submitBtn = document.getElementById("submitBtn");
+let booking = null;
+let publicSessionReady = false;
+let publicSessionPromise = null;
+
+async function ensurePublicSession() {
+    if (publicSessionReady) return;
+    if (publicSessionPromise) return publicSessionPromise;
+    publicSessionPromise = fetch("/public_session", { credentials: "same-origin" })
+        .then(() => {
+            publicSessionReady = true;
+        })
+        .catch((err) => {
+            console.error(err);
+            publicSessionReady = false;
+                })
+                .finally(() => { publicSessionPromise = null; });
+            return publicSessionPromise;
         }
+
+        const setReasonOptions = (categoryName) => {
+            reasonSelect.innerHTML = '<option value="">Select reason for visit</option>';
+            if (categoryName && reasonsByCategory[categoryName]) {
+                reasonsByCategory[categoryName].forEach(reason => {
+                    const option = document.createElement('option');
+                    option.value = reason;
+                    option.textContent = reason;
+                    reasonSelect.appendChild(option);
+                });
+            } else {
+                const option = document.createElement('option');
+                option.value = "General Consultation";
+                option.textContent = "General Consultation";
+                reasonSelect.appendChild(option);
+            }
+        };
+
+        const loadBookingContext = async () => {
+            try {
+                await ensurePublicSession();
+                const response = await fetch('/booking_context', { credentials: 'same-origin' });
+                if (!response.ok) {
+                    throw new Error("Sorry, we couldn't load your booking details. Please go back and try again.");
+                }
+                booking = await response.json();
+
+                document.getElementById("summary_doctor").textContent = booking.doctor_name || "Doctor";
+                document.getElementById("summary_date").textContent = booking.date || "";
+                document.getElementById("summary_time").textContent = booking.time_slot || "";
+
+                setReasonOptions(booking.category_name);
+            } catch (err) {
+                console.error(err);
+                errorDiv.textContent = err.message || "Sorry, we couldn't load your booking details.";
+                submitBtn.disabled = true;
+            }
+        };
+
+        submitBtn.disabled = true;
+        loadBookingContext().then(() => {
+            if (booking) {
+                submitBtn.disabled = false;
+            }
+        });
 
         // 4. Form Submission
         document.getElementById("bookingForm").addEventListener("submit", async (e) => {
             e.preventDefault();
             const btn = document.getElementById("submitBtn");
-            const errorDiv = document.getElementById("errorMsg");
             
             errorDiv.textContent = "";
             btn.disabled = true;
             btn.textContent = "Processing...";
 
+            await ensurePublicSession();
+
+            if (!booking || !booking.doctor_name || !booking.date || !booking.time_slot) {
+                errorDiv.textContent = "Sorry, your booking session has expired. Please go back and select a slot again.";
+                btn.disabled = false;
+                btn.textContent = "Confirm Appointment";
+                return;
+            }
+
             // CRITICAL: Ensure numbers are valid integers before stringifying
             const ageVal = parseInt(document.getElementById("age").value);
-            const schedIdVal = parseInt(scheduleId);
 
-            if (isNaN(ageVal) || isNaN(schedIdVal)) {
-                errorDiv.textContent = "Sorry, the age or schedule ID looks invalid. Please check and try again.";
+            if (isNaN(ageVal)) {
+                errorDiv.textContent = "Sorry, the age looks invalid. Please check and try again.";
                 btn.disabled = false;
                 btn.textContent = "Confirm Appointment";
                 return;
@@ -163,10 +207,9 @@
                 age: ageVal,
                 email: document.getElementById("email").value.trim(),
                 gender: document.getElementById("gender").value,
-                doctor_name: doctorName,
-                date: apptDate,
-                time_slot: apptTime,
-                schedule_id: schedIdVal,
+                doctor_name: booking ? booking.doctor_name : "",
+                date: booking ? booking.date : "",
+                time_slot: booking ? booking.time_slot : "",
                 request: combinedRequest
             };
 
@@ -191,15 +234,20 @@
                 }
 
                 if (response.ok && result.success) {
-                    // Redirect to Confirmation Page
-                    const successUrl = new URL(window.location.origin + "/confirmation_page");
-                    successUrl.searchParams.set("appointment_id", result.appointment_id);
-                    successUrl.searchParams.set("patient_id", result.patient_id);
-                    successUrl.searchParams.set("patient_name", payload.name);
-                    successUrl.searchParams.set("doctor", doctorName);
-                    successUrl.searchParams.set("date", apptDate);
-                    successUrl.searchParams.set("time", apptTime);
-                    window.location.href = successUrl.toString();
+                    try {
+                        const confirmationPayload = {
+                            appointment_id: result.appointment_id,
+                            patient_id: result.patient_id,
+                            patient_name: payload.name,
+                            doctor_name: booking ? booking.doctor_name : "",
+                            date: booking ? booking.date : "",
+                            time_slot: booking ? booking.time_slot : ""
+                        };
+                        sessionStorage.setItem("confirmation_details", JSON.stringify(confirmationPayload));
+                    } catch (e) {
+                        console.error("Failed to store confirmation details:", e);
+                    }
+                    window.location.href = "/confirmation_page";
                 } else {
                     const err = new Error(result.message || "Sorry, we could not complete the booking. Please try again.");
                     err.userMessage = err.message;

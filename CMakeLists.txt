@@ -35,6 +35,7 @@ add_executable(server
     controllers/appointment_controller.cpp
     controllers/cancellation_controller.cpp
     controllers/page_controller.cpp
+    services/public_session.cpp
 )
 
 # ---- Libraries ----

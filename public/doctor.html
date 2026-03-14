@@ -284,6 +284,45 @@
     .error {
         color: #ef4444;
     }
+
+    .skeleton {
+        position: relative;
+        overflow: hidden;
+        background: #e2e8f0;
+    }
+    .skeleton::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -150px;
+        width: 150px;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+        animation: shimmer 1.4s infinite;
+    }
+    @keyframes shimmer {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(300px); }
+    }
+    .skeleton-card {
+        background: white;
+        padding: 32px;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        display: grid;
+        gap: 16px;
+    }
+    .skeleton-row {
+        height: 16px;
+        border-radius: 8px;
+    }
+    .skeleton-row.short { width: 60%; }
+    .skeleton-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 12px;
+    }
     
     /* Responsive */
     @media (max-width: 768px) {
@@ -345,7 +384,7 @@
 </div>
 
 <div class="container">
-    <div id="doctorsContainer" class="loading">Loading doctors...</div>
+        <div id="doctorsContainer"></div>
 </div>
 
 <script>
@@ -357,17 +396,41 @@ const defaultUserIcon = `
 </svg>
 `;
 
-// Get category_id from URL query
-const urlParams = new URLSearchParams(window.location.search);
-const categoryId = urlParams.get('category_id');
-const categoryName = urlParams.get('category_name') || "Selected Category";
+let categoryId = null;
+let categoryName = "Selected Category";
+let publicSessionReady = false;
+let publicSessionPromise = null;
 
-document.getElementById("categoryName").textContent = decodeURIComponent(categoryName);
+async function ensurePublicSession() {
+    if (publicSessionReady) return;
+    if (publicSessionPromise) return publicSessionPromise;
+    publicSessionPromise = fetch("/public_session", { credentials: "same-origin" })
+        .then(() => {
+            publicSessionReady = true;
+        })
+        .catch((err) => {
+            console.error(err);
+            publicSessionReady = false;
+        })
+        .finally(() => { publicSessionPromise = null; });
+    return publicSessionPromise;
+}
+
+async function loadCategoryContext() {
+    const res = await fetch("/category_context", { credentials: "same-origin" });
+    if (!res.ok) throw new Error("Sorry, we could not load the category right now");
+    const data = await res.json();
+    categoryId = data.category_id;
+    categoryName = data.category_name || "Selected Category";
+    document.getElementById("categoryName").textContent = categoryName;
+}
 
 async function fetchDoctors(){
     const container = document.getElementById("doctorsContainer");
-    container.innerHTML = '<div class="loading">Loading doctors...</div>';
+    renderDoctorsSkeleton(container, 6);
     try{
+        await ensurePublicSession();
+        await loadCategoryContext();
         const res = await fetch(`/get_doctors?category_id=${categoryId}`);
         if(!res.ok) throw new Error("Sorry, we could not load doctors right now");
         const doctors = await res.json();
@@ -389,7 +452,7 @@ async function fetchDoctors(){
                     </div>
                     <div class="doctor-info">
                         <div class="doctor-name">${doc.doctor_name}</div>
-                        <div class="doctor-specialty">${decodeURIComponent(categoryName)}</div>
+                        <div class="doctor-specialty">${categoryName}</div>
                         <div class="doctor-qualification">${doc.qualifications}</div>
                     </div>
                 </div>
@@ -423,10 +486,7 @@ async function fetchDoctors(){
             const btn = card.querySelector('.btn-schedule');
             btn.addEventListener('click', function() {
                 goToSchedule(
-                    this.dataset.doctorId,
-                    this.dataset.doctorName,
-                    this.dataset.rating,
-                    this.dataset.experience
+                    this.dataset.doctorId
                 );
             });
             
@@ -440,8 +500,40 @@ async function fetchDoctors(){
 }
 
 // Redirect to schedule page with all details
-function goToSchedule(doctorId, doctorName, rating, experience){
-    window.location.href = `/schedule_page?doctor_id=${doctorId}&doctor=${encodeURIComponent(doctorName)}&category_name=${encodeURIComponent(categoryName)}&rating=${rating}&experience=${experience}`;
+async function goToSchedule(doctorId){
+    try {
+        await ensurePublicSession();
+        const res = await fetch("/schedule_context", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ doctor_id: Number(doctorId) })
+        });
+        if (!res.ok) throw new Error("Sorry, we could not open the schedule right now.");
+        window.location.href = "/schedule_page";
+    } catch (err) {
+        console.error(err);
+        const container = document.getElementById("doctorsContainer");
+        container.innerHTML = '<div class="error">Sorry, we could not open the schedule right now. Please try again.</div>';
+    }
+}
+
+function renderDoctorsSkeleton(container, count) {
+    container.innerHTML = "";
+    const grid = document.createElement("div");
+    grid.className = "doctors-grid";
+    for (let i = 0; i < count; i++) {
+        const card = document.createElement("div");
+        card.className = "skeleton-card";
+        card.innerHTML = `
+            <div class="skeleton skeleton-avatar"></div>
+            <div class="skeleton skeleton-row"></div>
+            <div class="skeleton skeleton-row short"></div>
+            <div class="skeleton skeleton-row"></div>
+            <div class="skeleton skeleton-row short"></div>
+        `;
+        grid.appendChild(card);
+    }
+    container.appendChild(grid);
 }
 
 fetchDoctors();

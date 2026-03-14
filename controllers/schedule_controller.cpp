@@ -1,5 +1,6 @@
 #include "schedule_controller.h"
 #include "../models/schedule.h"
+#include "../services/public_session.h"
 
 #include <iostream>
 #include <fstream>
@@ -16,10 +17,32 @@ struct DoctorSession {
     std::chrono::system_clock::time_point expires_at;
 };
 
+struct ScheduleContext {
+    int doctor_id;
+    std::string doctor_name;
+    std::string category_name;
+    std::string experience_years;
+    double ratings;
+    std::chrono::system_clock::time_point expires_at;
+};
+
 std::unordered_map<std::string, DoctorSession> g_doctor_sessions;
 std::mutex g_session_mutex;
 
+std::unordered_map<std::string, ScheduleContext> g_schedule_contexts;
+std::mutex g_schedule_mutex;
+
 std::string generateSessionToken() {
+    static std::random_device rd;
+    static std::mt19937_64 gen(rd());
+    std::uniform_int_distribution<unsigned long long> dis;
+
+    std::ostringstream out;
+    out << std::hex << dis(gen) << dis(gen);
+    return out.str();
+}
+
+std::string generateScheduleToken() {
     static std::random_device rd;
     static std::mt19937_64 gen(rd());
     std::uniform_int_distribution<unsigned long long> dis;
@@ -36,6 +59,18 @@ void pruneExpiredSessions() {
     for (auto it = g_doctor_sessions.begin(); it != g_doctor_sessions.end();) {
         if (it->second.expires_at <= now) {
             it = g_doctor_sessions.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
+void pruneExpiredScheduleContexts() {
+    const auto now = std::chrono::system_clock::now();
+    std::lock_guard<std::mutex> lock(g_schedule_mutex);
+    for (auto it = g_schedule_contexts.begin(); it != g_schedule_contexts.end();) {
+        if (it->second.expires_at <= now) {
+            it = g_schedule_contexts.erase(it);
         } else {
             ++it;
         }
@@ -71,6 +106,53 @@ std::string getTokenFromRequest(const crow::request& req, crow::json::rvalue bod
     return "";
 }
 
+std::string getScheduleTokenFromRequest(const crow::request& req) {
+    auto auth_header = req.get_header_value("Authorization");
+    const std::string prefix = "Bearer ";
+    if (auth_header.rfind(prefix, 0) == 0) {
+        return auth_header.substr(prefix.size());
+    }
+
+    const std::string cookie = req.get_header_value("Cookie");
+    if (cookie.empty()) {
+        return "";
+    }
+
+    size_t start = 0;
+    while (start < cookie.size()) {
+        size_t end = cookie.find(';', start);
+        if (end == std::string::npos) {
+            end = cookie.size();
+        }
+
+        size_t eq = cookie.find('=', start);
+        if (eq != std::string::npos && eq < end) {
+            std::string k = cookie.substr(start, eq - start);
+            while (!k.empty() && k.front() == ' ') {
+                k.erase(k.begin());
+            }
+            if (k == "schedule_token") {
+                return cookie.substr(eq + 1, end - (eq + 1));
+            }
+        }
+
+        start = end + 1;
+    }
+
+    return "";
+}
+
+bool getScheduleContext(const std::string& token, ScheduleContext& out) {
+    pruneExpiredScheduleContexts();
+    std::lock_guard<std::mutex> lock(g_schedule_mutex);
+    auto it = g_schedule_contexts.find(token);
+    if (it == g_schedule_contexts.end()) {
+        return false;
+    }
+    out = it->second;
+    return true;
+}
+
 } // namespace
 
 void registerScheduleRoutes(crow::SimpleApp& app, sqlite3* db)
@@ -94,13 +176,17 @@ void registerScheduleRoutes(crow::SimpleApp& app, sqlite3* db)
         sqlite3_free(err_msg);
     }
 
+
     // --------------------------------------------------
     // GET: Available slots for a doctor on a given date
     // Exclude BOOKED or BLOCKED
     // --------------------------------------------------
     CROW_ROUTE(app, "/get_available_slots/<int>/<string>").methods("GET"_method)
-    ([db](int doctor_id, const std::string& appointment_date)
+    ([db](const crow::request& req, int doctor_id, const std::string& appointment_date)
     {
+        if (!publicSessionValid(req)) {
+            return crow::response(401, "Please refresh and try again.");
+        }
         sqlite3_stmt* stmt = nullptr;
 
         const char* sql =
@@ -151,8 +237,11 @@ void registerScheduleRoutes(crow::SimpleApp& app, sqlite3* db)
     // GET: All slots for a doctor on a given date with status
     // --------------------------------------------------
     CROW_ROUTE(app, "/get_slots_status/<int>/<string>").methods("GET"_method)
-    ([db](int doctor_id, const std::string& appointment_date)
+    ([db](const crow::request& req, int doctor_id, const std::string& appointment_date)
     {
+        if (!publicSessionValid(req)) {
+            return crow::response(401, "Please refresh and try again.");
+        }
         const char* sql =
             "SELECT ds.schedule_id, ds.time_slot, "
             "       CASE "
@@ -201,6 +290,113 @@ void registerScheduleRoutes(crow::SimpleApp& app, sqlite3* db)
     });
 
     // --------------------------------------------------
+    // POST: Create schedule context (public flow)
+    // --------------------------------------------------
+    CROW_ROUTE(app, "/schedule_context").methods("POST"_method)
+    ([db](const crow::request& req)
+    {
+        if (!publicSessionValid(req)) {
+            return crow::response(401, "Please refresh and try again.");
+        }
+
+        auto body = crow::json::load(req.body);
+        if (!body || !body.has("doctor_id")) {
+            return crow::response(400, "Please provide doctor_id.");
+        }
+
+        const int doctor_id = body["doctor_id"].i();
+        if (doctor_id <= 0) {
+            return crow::response(400, "Please provide a valid doctor_id.");
+        }
+
+        sqlite3_stmt* stmt = nullptr;
+        const char* sql_doctor =
+            "SELECT doctor_name, experience_years, ratings, category_id "
+            "FROM Doctor WHERE doctor_id = ? LIMIT 1;";
+        if (sqlite3_prepare_v2(db, sql_doctor, -1, &stmt, nullptr) != SQLITE_OK) {
+            return crow::response(500, "Sorry, we couldn't load the doctor right now.");
+        }
+
+        sqlite3_bind_int(stmt, 1, doctor_id);
+        std::string doctor_name;
+        std::string experience_years;
+        double ratings = 0.0;
+        int category_id = -1;
+
+        if (sqlite3_step(stmt) == SQLITE_ROW) {
+            doctor_name = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+            experience_years = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+            ratings = sqlite3_column_double(stmt, 2);
+            category_id = sqlite3_column_int(stmt, 3);
+        }
+        sqlite3_finalize(stmt);
+
+        if (doctor_name.empty() || category_id <= 0) {
+            return crow::response(404, "Doctor not found.");
+        }
+
+        std::string category_name;
+        const char* sql_category =
+            "SELECT category_name FROM Category WHERE category_id = ? LIMIT 1;";
+        if (sqlite3_prepare_v2(db, sql_category, -1, &stmt, nullptr) != SQLITE_OK) {
+            return crow::response(500, "Sorry, we couldn't load the category right now.");
+        }
+        sqlite3_bind_int(stmt, 1, category_id);
+        if (sqlite3_step(stmt) == SQLITE_ROW) {
+            category_name = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+        }
+        sqlite3_finalize(stmt);
+
+        const std::string token = generateScheduleToken();
+        const auto expires_at = std::chrono::system_clock::now() + std::chrono::minutes(15);
+        {
+            std::lock_guard<std::mutex> lock(g_schedule_mutex);
+            g_schedule_contexts[token] = {doctor_id, doctor_name, category_name, experience_years, ratings, expires_at};
+        }
+
+        crow::json::wvalue res;
+        res["success"] = true;
+        res["message"] = "Schedule context created.";
+
+        crow::response response(200, res);
+        std::ostringstream cookie;
+        cookie << "schedule_token=" << token
+               << "; Path=/; Max-Age=900; HttpOnly; SameSite=Strict; Secure";
+        response.add_header("Set-Cookie", cookie.str());
+        return response;
+    });
+
+    // --------------------------------------------------
+    // GET: Schedule context (public flow)
+    // --------------------------------------------------
+    CROW_ROUTE(app, "/schedule_context").methods("GET"_method)
+    ([db](const crow::request& req)
+    {
+        if (!publicSessionValid(req)) {
+            return crow::response(401, "Please refresh and try again.");
+        }
+
+        const std::string token = getScheduleTokenFromRequest(req);
+        if (token.empty()) {
+            return crow::response(401, "Missing schedule token.");
+        }
+
+        ScheduleContext ctx;
+        if (!getScheduleContext(token, ctx)) {
+            return crow::response(401, "Invalid or expired schedule token.");
+        }
+
+        crow::json::wvalue res;
+        res["doctor_id"] = ctx.doctor_id;
+        res["doctor_name"] = ctx.doctor_name;
+        res["category_name"] = ctx.category_name;
+        res["experience_years"] = ctx.experience_years;
+        res["ratings"] = ctx.ratings;
+
+        return crow::response(200, res);
+    });
+
+    // --------------------------------------------------
     // GET: Appointment page
     // --------------------------------------------------
     CROW_ROUTE(app, "/appointment_page/<int>/<string>/<string>/<string>/<string>")
@@ -240,6 +436,9 @@ void registerScheduleRoutes(crow::SimpleApp& app, sqlite3* db)
     CROW_ROUTE(app, "/add_slot").methods("POST"_method)
     ([db](const crow::request& req)
     {
+        if (!publicSessionValid(req)) {
+            return crow::response(401, "Please refresh and try again.");
+        }
         auto body = crow::json::load(req.body);
         if (!body || !body.has("time_slot")) {
             return crow::response(400, "Please provide a time slot.");
@@ -276,6 +475,9 @@ void registerScheduleRoutes(crow::SimpleApp& app, sqlite3* db)
     CROW_ROUTE(app, "/block_slot").methods("POST"_method)
     ([db](const crow::request& req)
     {
+        if (!publicSessionValid(req)) {
+            return crow::response(401, "Please refresh and try again.");
+        }
         auto body = crow::json::load(req.body);
         if (!body || !body.has("doctor_id") || !body.has("schedule_id") || !body.has("appointment_date")) {
             return crow::response(400, "Please provide doctor_id, schedule_id, and appointment_date.");

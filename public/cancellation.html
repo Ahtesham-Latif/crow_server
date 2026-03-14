@@ -114,6 +114,24 @@
     </div>
 
     <script>
+        let publicSessionReady = false;
+        let publicSessionPromise = null;
+
+        async function ensurePublicSession() {
+            if (publicSessionReady) return;
+            if (publicSessionPromise) return publicSessionPromise;
+            publicSessionPromise = fetch("/public_session", { credentials: "same-origin" })
+                .then(() => {
+                    publicSessionReady = true;
+                })
+                .catch((err) => {
+                    console.error(err);
+                    publicSessionReady = false;
+                })
+                .finally(() => { publicSessionPromise = null; });
+            return publicSessionPromise;
+        }
+
         document.getElementById('cancelForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -132,6 +150,7 @@
             msgDiv.style.display = 'none';
 
             try {
+                await ensurePublicSession();
                 const response = await fetch('/cancel_appointment', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },

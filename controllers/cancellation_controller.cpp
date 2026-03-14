@@ -1,5 +1,6 @@
 #include "cancellation_controller.h"
 #include "../models/cancellation.h"
+#include "../services/public_session.h"
 #include <crow.h>
 #include <sqlite3.h>
 #include "../config/n8n_config.h"
@@ -10,6 +11,9 @@
 void registerCancellationRoutes(crow::SimpleApp& app, sqlite3* db) {
     CROW_ROUTE(app, "/cancel_appointment").methods("POST"_method)
     ([db](const crow::request& req) {
+        if (!publicSessionValid(req)) {
+            return crow::response(401, "Please refresh and try again.");
+        }
 
         auto body = crow::json::load(req.body);
         if (!body) return crow::response(400, "Please send a valid request.");

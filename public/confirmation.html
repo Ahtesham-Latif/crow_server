@@ -458,30 +458,81 @@
     </div>
 
     <script>
-        const params = new URLSearchParams(window.location.search);
-        
-        // Populate IDs from the URL
-        document.getElementById("disp_appt_id").textContent = "#" + (params.get("appointment_id") || "N/A");
-        document.getElementById("disp_pat_id").textContent = "#" + (params.get("patient_id") || "N/A");
-        
-        // Populate Details
-        document.getElementById("disp_patient").textContent = decodeURIComponent(params.get("patient_name") || "N/A");
-        
-        let docName = decodeURIComponent(params.get("doctor") || "Doctor");
-        document.getElementById("disp_doctor").textContent = docName.startsWith("Dr.") ? docName : "Dr. " + docName;
+        const setFallback = () => {
+            document.getElementById("disp_appt_id").textContent = "#N/A";
+            document.getElementById("disp_pat_id").textContent = "#N/A";
+            document.getElementById("disp_patient").textContent = "Unable to load details";
+            document.getElementById("disp_doctor").textContent = "N/A";
+            document.getElementById("disp_datetime").textContent = "N/A";
+        };
 
-        // Format Date and Time
-        const dateStr = params.get("date");
-        const timeStr = decodeURIComponent(params.get("time") || "");
-        let formattedDate = dateStr;
-        
-        if (dateStr) {
-            const dateObj = new Date(dateStr + 'T00:00:00');
-            if (!isNaN(dateObj.getTime())) {
-                formattedDate = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
-            }
+        const formatDate = (dateStr) => {
+            if (!dateStr) return "N/A";
+            const dateObj = new Date(dateStr + "T00:00:00");
+            if (isNaN(dateObj.getTime())) return dateStr;
+            return dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+        };
+
+        let publicSessionReady = false;
+        let publicSessionPromise = null;
+
+        async function ensurePublicSession() {
+            if (publicSessionReady) return;
+            if (publicSessionPromise) return publicSessionPromise;
+            publicSessionPromise = fetch("/public_session", { credentials: "same-origin" })
+                .then(() => { publicSessionReady = true; })
+                .catch((err) => {
+                    console.error(err);
+                    publicSessionReady = false;
+                })
+                .finally(() => { publicSessionPromise = null; });
+            return publicSessionPromise;
         }
-        document.getElementById("disp_datetime").textContent = `${formattedDate} at ${timeStr}`;
+
+        const loadConfirmation = async () => {
+            try {
+                const cached = sessionStorage.getItem("confirmation_details");
+                if (cached) {
+                    const data = JSON.parse(cached);
+                    document.getElementById("disp_appt_id").textContent = "#" + (data.appointment_id || "N/A");
+                    document.getElementById("disp_pat_id").textContent = "#" + (data.patient_id || "N/A");
+                    document.getElementById("disp_patient").textContent = data.patient_name || "N/A";
+
+                    const docName = data.doctor_name || "Doctor";
+                    document.getElementById("disp_doctor").textContent =
+                        docName.startsWith("Dr.") ? docName : "Dr. " + docName;
+
+                    const formattedDate = formatDate(data.date);
+                    const timeStr = data.time_slot || "";
+                    document.getElementById("disp_datetime").textContent = `${formattedDate} at ${timeStr}`;
+                    return;
+                }
+
+                await ensurePublicSession();
+                const response = await fetch('/confirmation_details', { credentials: 'same-origin' });
+                if (!response.ok) {
+                    throw new Error("Failed to load confirmation details");
+                }
+                const data = await response.json();
+
+                document.getElementById("disp_appt_id").textContent = "#" + (data.appointment_id || "N/A");
+                document.getElementById("disp_pat_id").textContent = "#" + (data.patient_id || "N/A");
+                document.getElementById("disp_patient").textContent = data.patient_name || "N/A";
+
+                const docName = data.doctor_name || "Doctor";
+                document.getElementById("disp_doctor").textContent =
+                    docName.startsWith("Dr.") ? docName : "Dr. " + docName;
+
+                const formattedDate = formatDate(data.date);
+                const timeStr = data.time_slot || "";
+                document.getElementById("disp_datetime").textContent = `${formattedDate} at ${timeStr}`;
+            } catch (err) {
+                console.error(err);
+                setFallback();
+            }
+        };
+
+        loadConfirmation();
     </script>
 </body>
 </html>

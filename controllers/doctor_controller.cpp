@@ -2,8 +2,8 @@
 #include <sqlite3.h>
 #include <vector>
 #include <string>
-
 #include "../models/doctor.h"          // Doctor model
+#include "../services/public_session.h"
 #include "doctor_controller.h"         // This controller's header
 
 using namespace std;
@@ -14,14 +14,18 @@ void registerDoctorRoutes(crow::SimpleApp& app, sqlite3* db) {
     // ---------------------------------
     CROW_ROUTE(app, "/get_doctors").methods("GET"_method)
     ([db](const crow::request& req) {
-
+        if (!publicSessionValid(req)) {
+            return crow::response(401, "Please refresh and try again.");
+        }
         auto query = req.url_params.get("category_id");
         sqlite3_stmt* stmt;
         const char* sql = nullptr;
         int category_id = 0;
+        int cache_key = -1;
 
         if (query) {
             category_id = std::stoi(query);
+            cache_key = category_id;
             sql =
                 "SELECT doctor_id, doctor_name, experience_years, qualification, ratings, category_id "
                 "FROM Doctor WHERE category_id = ?";
@@ -65,6 +69,9 @@ void registerDoctorRoutes(crow::SimpleApp& app, sqlite3* db) {
     // ---------------------------------
     CROW_ROUTE(app, "/add_doctor").methods("POST"_method)
     ([db](const crow::request& req) {
+        if (!publicSessionValid(req)) {
+            return crow::response(401, "Please refresh and try again.");
+        }
 
         auto body = crow::json::load(req.body);
         if (!body) {
@@ -104,6 +111,9 @@ void registerDoctorRoutes(crow::SimpleApp& app, sqlite3* db) {
     // ---------------------------------
     CROW_ROUTE(app, "/delete_doctor/<int>").methods("DELETE"_method)
     ([db](const crow::request& req, int doctor_id) {
+        if (!publicSessionValid(req)) {
+            return crow::response(401, "Please refresh and try again.");
+        }
 
         if (doctor_id <= 0) {
             return crow::response(400, "Please provide a valid doctor_id.");

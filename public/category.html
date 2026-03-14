@@ -199,6 +199,52 @@
     color: #718096; 
     font-size: 18px; 
   }
+  .skeleton {
+    position: relative;
+    overflow: hidden;
+    background: #e2e8f0;
+  }
+  .skeleton::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -150px;
+    width: 150px;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+    animation: shimmer 1.4s infinite;
+  }
+  @keyframes shimmer {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(300px); }
+  }
+  .skeleton-card {
+    background: white;
+    border-radius: 16px;
+    padding: 48px 32px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+  .skeleton-circle {
+    width: 96px;
+    height: 96px;
+    border-radius: 16px;
+  }
+  .skeleton-line {
+    height: 16px;
+    width: 80%;
+    border-radius: 8px;
+  }
+  .skeleton-line.short { width: 60%; }
+  .skeleton-btn {
+    height: 40px;
+    width: 140px;
+    border-radius: 8px;
+  }
   .error { 
     background: #fee; 
     border: 1px solid #fcc; 
@@ -410,9 +456,7 @@
     <p>Choose a specialty to view available doctors and schedules.</p>
   </div>
 
-  <div id="categories">
-    <div class="loading">Loading categories...</div>
-  </div>
+    <div id="categories"></div>
 
   <!-- Cancel Appointment Button -->
   <div class="cancel-section">
@@ -529,9 +573,29 @@ function getIcon(categoryName){
     return '🏥';
 }
 
+let publicSessionReady = false;
+let publicSessionPromise = null;
+
+async function ensurePublicSession() {
+    if (publicSessionReady) return;
+    if (publicSessionPromise) return publicSessionPromise;
+    publicSessionPromise = fetch("/public_session", { credentials: "same-origin" })
+        .then(() => {
+            publicSessionReady = true;
+        })
+        .catch((err) => {
+            console.error(err);
+            publicSessionReady = false;
+        })
+        .finally(() => { publicSessionPromise = null; });
+    return publicSessionPromise;
+}
+
 async function loadCategories() {
     const container = document.getElementById("categories");
     try {
+        renderCategorySkeleton(container, 6);
+        await ensurePublicSession();
         const res = await fetch("/get_categories");
         if (!res.ok) throw new Error("Sorry, we could not load categories right now");
 
@@ -557,8 +621,21 @@ async function loadCategories() {
                 <button class="find-doctors-btn">Find Doctors</button>
             `;
 
-            div.onclick = () => {
-                window.location.href = `/doctors_page?category_id=${cat.category_id}&category_name=${encodeURIComponent(cat.category_name)}`;
+            div.onclick = async () => {
+                try {
+                    const resp = await fetch("/category_context", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ category_id: cat.category_id })
+                    });
+                    if (!resp.ok) {
+                        throw new Error("Sorry, we couldn't open this category right now.");
+                    }
+                    window.location.href = "/doctors_page";
+                } catch (err) {
+                    console.error(err);
+                    container.innerHTML = '<div class="error">Sorry, we could not open this category right now. Please try again.</div>';
+                }
             };
 
             container.appendChild(div);
@@ -567,6 +644,21 @@ async function loadCategories() {
     } catch (err) {
         console.error(err);
         container.innerHTML = '<div class="error">Sorry, we could not load categories right now. Please try again.</div>';
+    }
+}
+
+function renderCategorySkeleton(container, count) {
+    container.innerHTML = "";
+    for (let i = 0; i < count; i++) {
+        const card = document.createElement("div");
+        card.className = "skeleton-card";
+        card.innerHTML = `
+            <div class="skeleton skeleton-circle"></div>
+            <div class="skeleton skeleton-line"></div>
+            <div class="skeleton skeleton-line short"></div>
+            <div class="skeleton skeleton-btn"></div>
+        `;
+        container.appendChild(card);
     }
 }
 
