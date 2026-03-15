@@ -1,149 +1,231 @@
-# Online Doctor Appointment Booking System
+# 🏥 Online Doctor Appointment Booking System
 
-A secure, high-performance web-based application designed to streamline the process of scheduling medical appointments. This system allows patients to browse doctors by specialty, view real-time availability, and book or cancel appointments with ease.
+A secure, high-performance web-based medical scheduling platform built
+in **C++ using the Crow framework**. The system allows patients to
+browse doctors by specialty, check real-time availability, and book or
+cancel appointments efficiently while ensuring strong security and
+database integrity.
 
-**Author:** [Ahtesham Latif](https://github.com/Ahtesham-Latif)
+**Author:** Ahtesham Latif\
+GitHub: https://github.com/Ahtesham-Latif
+
 ![C++](https://img.shields.io/badge/C++-17-blue.svg)
 ![Framework](https://img.shields.io/badge/Framework-Crow-green.svg)
 ![Database](https://img.shields.io/badge/Database-SQLite3-lightgrey.svg)
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
----
 
-## 🏥 Key Features
+------------------------------------------------------------------------
 
-- **Doctor Directory**: Browse a categorized list of doctors by medical specialty (e.g., Cardiologist, Dentist)
-- **Real-time Scheduling**: View available time slots and book appointments instantly with built-in double-booking protection
-- **MVC Architecture**: Modular code structure with dedicated controllers for categories, doctors, schedules, and appointments
-- **Secure Communication**: Full HTTPS/SSL support for encrypted data transmission
-- **Automatic Notifications**: Instant email confirmations and reminders for all scheduled or cancelled appointments
+# ✨ Key Features
 
----
+## 👨‍⚕️ Doctor Directory
 
-## 🛠️ Technical Stack
+Browse doctors categorized by medical specialties such as: -
+Cardiologist - Dentist - Dermatologist - General Physician
 
-| Component | Technology |
-|-----------|-----------|
-| **Backend Framework** | Crow (C++17) |
-| **Database** | SQLite3 |
-| **Security** | OpenSSL (TLS/SSL) |
-| **Frontend** | HTML5 with Mustache templates |
-| **Build System** | CMake 3.15+ |
-| **Platform** | Cross-platform (Windows, Linux, macOS) |
+Each doctor profile displays scheduling information and available
+appointment slots.
 
----
+------------------------------------------------------------------------
 
-## 📂 Project Structure
+## 📅 Real-Time Appointment Scheduling
 
-```
-crow_backend/
-├── config/              # Configuration files
-├── controllers/         # Business logic layer (MVC)
-├── models/             # Data structures and schemas
-├── services/           # Utility services
-├── routes/             # API route definitions
-├── public/             # Frontend UI (HTML/CSS)
-├── db/                 # Database files
-├── Crow/               # Crow framework library
-├── httplib/            # HTTP client library
-├── CMakeLists.txt      # Build configuration
-└── main.cpp            # Application entry point
-```
+Patients can: - View available appointment slots - Book appointments
+instantly - Cancel existing bookings
 
-### Directory Details
+The system includes **automatic double-booking protection**.
 
-- **controllers/**: Contains business logic for managing appointments, doctors, schedules, categories, cancellations, and patients
-- **models/**: Defines data structures for all entities (appointment, doctor, patient, schedule, etc.)
-- **public/**: Static UI pages including category.html, doctor.html, appointment.html, confirmation.html, and cancellation.html
-- **services/**: Utility functions and helpers (utils.h)
-- **db/**: SQLite database files for persistent storage
+------------------------------------------------------------------------
 
----
+## 🔐 Secure Session-Based Navigation
 
-## 🚀 Installation & Setup
+Database IDs are **never exposed in URLs**.
 
-### Prerequisites
+Instead the system uses: - Session storage - Server-side context
+validation
 
-- **Compiler**: C++17 compliant compiler (GCC 7+, Clang 5+, or MSVC 2017+)
-- **CMake**: Version 3.15 or higher
-- **Libraries**:
-  - SQLite3
-  - OpenSSL
-  - Windows: ws2_32, mswsock (included in Win32 SDK)
+This prevents **IDOR (Insecure Direct Object Reference) attacks** where
+users manipulate IDs in URLs.
 
-### Build Instructions
+------------------------------------------------------------------------
 
-1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/Ahtesham-Latif/crow_server.git
-   cd crow_server
-   ```
+## ⚡ Asynchronous Email Notifications
 
-2. **Configure SSL Certificates**:
-   Ensure `cert.pem` and `key.pem` are present in your configured directory for HTTPS support.
+The system integrates with **n8n automation workflows**.
 
-3. **Build with CMake**:
-   ```bash
-   mkdir build && cd build
-   cmake ..
-   make
-   ```
+After a successful booking or cancellation: 1. The backend triggers a
+webhook 2. n8n sends the confirmation email 3. The request runs in a
+background thread
 
-4. **Run the Server**:
-   ```bash
-   ./server
-   ```
+This ensures the user sees the confirmation page immediately.
 
-   The server will start at `https://localhost:8443`
+------------------------------------------------------------------------
 
----
+## 🧠 Smart Database Constraints
 
-## 📋 System Architecture
+The database schema uses a **composite unique constraint**:
 
-The project follows an **MVC (Model-View-Controller)** pattern:
+(doctor_id, slot_id, appointment_date)
 
-- **Models**: Data structures and database schemas
-- **Controllers**: Business logic and request handling
-- **Views**: Frontend HTML templates and static files
-- **Services**: Shared utilities and helper functions
+This ensures: - No double booking - Same slot can exist on different
+days - Database-level scheduling validation
 
-### API Endpoints
+------------------------------------------------------------------------
 
-- **Categories**: View medical specialties
-- **Doctors**: Browse doctors by specialty
-- **Schedules**: Check doctor availability
-- **Appointments**: Book, view, and manage appointments
-- **Cancellations**: Cancel existing appointments
-- **Patients**: Patient information management
+## 🎨 Improved User Experience
 
----
+Frontend improvements include: - Skeleton loaders while data loads -
+Elimination of empty white screens - Improved perceived performance
 
-## 🔒 Security Features
+------------------------------------------------------------------------
 
-- **HTTPS/TLS Encryption**: All communication is encrypted using OpenSSL
-- **Double-booking Prevention**: Automatic conflict detection
-- **Email Notifications**: Secure appointment confirmations and reminders
-- **Data Validation**: Input validation on all endpoints
+# 🛠️ Technical Stack
 
----
+  Component           Technology
+  ------------------- ----------------------------------------
+  Backend Framework   Crow (C++17)
+  Database            SQLite3
+  Security            OpenSSL (TLS/SSL)
+  Templates           Mustache HTML
+  Automation          n8n Webhooks
+  Build System        CMake
+  Platform            Cross-platform (Windows, Linux, macOS)
 
-## 📝 License
+------------------------------------------------------------------------
 
-This project is open source. See the LICENSE file for details.
+# 🧱 System Architecture
 
----
+The system follows an **MVC (Model-View-Controller)** architecture.
 
-## 👨‍💼 Author
+### Models
 
-**Ahtesham Latif** - Full Stack Developer
+Represent core entities: - Doctor - Patient - Appointment - Schedule -
+Category
 
-- GitHub: [@Ahtesham-Latif](https://github.com/Ahtesham-Latif)
+### Controllers
 
----
+Handle business logic such as: - Doctor lookup - Slot availability -
+Appointment booking - Appointment cancellation
 
-## 📧 Support
+### Views
 
-For issues, feature requests, or contributions, please visit the [GitHub Repository](https://github.com/Ahtesham-Latif/crow_server).
+Frontend HTML pages served by the Crow server.
 
----
+Examples: - category.html - doctor.html - appointment.html -
+confirmation.html - cancellation.html
 
-*Last Updated: February 2026*
+### Services
+
+Utility modules for: - Helper functions - HTTP requests - Notification
+triggers
+
+------------------------------------------------------------------------
+
+# 📂 Project Structure
+
+crow_backend/ ├── config/ \# Configuration files ├── controllers/ \# MVC
+controllers ├── models/ \# Data structures ├── services/ \# Utility
+services ├── routes/ \# API route definitions ├── public/ \# Frontend
+HTML/CSS ├── db/ \# SQLite database ├── Crow/ \# Crow framework source
+├── httplib/ \# HTTP client library ├── CMakeLists.txt \# Build
+configuration └── main.cpp \# Application entry point
+
+------------------------------------------------------------------------
+
+# 🔒 Security Features
+
+### HTTPS / TLS Encryption
+
+All traffic is encrypted using **OpenSSL**.
+
+### URL Masking
+
+Sensitive database IDs are **never exposed in URLs**.
+
+### Database Integrity
+
+Composite unique constraint prevents duplicate bookings.
+
+### Input Validation
+
+All endpoints validate user input to prevent invalid requests.
+
+------------------------------------------------------------------------
+
+# 🚀 Installation & Setup
+
+## Prerequisites
+
+-   C++17 compiler (GCC 7+, Clang 5+, MSVC 2017+)
+-   CMake 3.15+
+-   SQLite3
+-   OpenSSL
+
+Windows additional libraries: - ws2_32 - mswsock
+
+------------------------------------------------------------------------
+
+# ⚙️ Build Instructions
+
+### Clone the Repository
+
+git clone https://github.com/Ahtesham-Latif/crow_server.git cd
+crow_server
+
+### Configure SSL Certificates
+
+Place the following files in the project directory:
+
+cert.pem key.pem
+
+### Build the Project
+
+mkdir build cd build cmake .. make
+
+### Run the Server
+
+./server
+
+Server runs at:
+
+https://localhost:8443
+
+------------------------------------------------------------------------
+
+# 🔗 API Endpoints
+
+  Endpoint        Description
+  --------------- --------------------------
+  /categories     List medical specialties
+  /doctors        View doctors by category
+  /schedule       View doctor availability
+  /appointments   Book appointment
+  /cancel         Cancel appointment
+  /patients       Manage patient records
+
+------------------------------------------------------------------------
+
+# 📧 Email Automation (n8n)
+
+The backend triggers **webhooks to n8n** for: - Appointment
+confirmations - Cancellation notifications - Reminder emails
+
+Webhook URLs are stored as **environment variables**.
+
+------------------------------------------------------------------------
+
+# 📝 License
+
+MIT License
+
+------------------------------------------------------------------------
+
+# 👨‍💻 Author
+
+**Ahtesham Latif**
+
+GitHub: https://github.com/Ahtesham-Latif
+
+------------------------------------------------------------------------
+
+Last Updated: March 2026

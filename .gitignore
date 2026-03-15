@@ -18,6 +18,9 @@ db/*.sqbpro
 *.db
 *.sqlite
 *.sqlite3
+*.db-shm
+*.db-wal
+
 
 # ===== IDE / Editor =====
 .vscode/
