@@ -27,11 +27,11 @@ void registerDoctorRoutes(crow::SimpleApp& app, sqlite3* db) {
             category_id = std::stoi(query);
             cache_key = category_id;
             sql =
-                "SELECT doctor_id, doctor_name, experience_years, qualification, ratings, category_id "
+                "SELECT doctor_id, doctor_name, phone, experience_years, qualification, ratings, category_id "
                 "FROM Doctor WHERE category_id = ?";
         } else {
             sql =
-                "SELECT doctor_id, doctor_name, experience_years, qualification, ratings, category_id "
+                "SELECT doctor_id, doctor_name, phone, experience_years, qualification, ratings, category_id "
                 "FROM Doctor";
         }
 
@@ -51,12 +51,14 @@ void registerDoctorRoutes(crow::SimpleApp& app, sqlite3* db) {
             result[i]["doctor_id"] = sqlite3_column_int(stmt, 0);
             result[i]["doctor_name"] =
                 reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
-            result[i]["experience_years"] =
+            result[i]["phone"] =
                 reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
-            result[i]["qualifications"] =
+            result[i]["experience_years"] =
                 reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
-            result[i]["ratings"] = sqlite3_column_double(stmt, 4);
-            result[i]["category_id"] = sqlite3_column_int(stmt, 5);
+            result[i]["qualifications"] =
+                reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4));
+            result[i]["ratings"] = sqlite3_column_double(stmt, 5);
+            result[i]["category_id"] = sqlite3_column_int(stmt, 6);
             i++;
         }
 
@@ -102,6 +104,70 @@ void registerDoctorRoutes(crow::SimpleApp& app, sqlite3* db) {
         response["success"] = inserted;
         response["message"] =
             inserted ? "Doctor added successfully." : "Sorry, we could not add that doctor right now.";
+
+    return crow::response(200, response);
+});
+
+    // ---------------------------------
+    // PUT update doctor
+    // ---------------------------------
+    CROW_ROUTE(app, "/update_doctor/<int>").methods("PUT"_method)
+    ([db](const crow::request& req, int doctor_id) {
+        if (!publicSessionValid(req)) {
+            return crow::response(401, "Please refresh and try again.");
+        }
+
+        if (doctor_id <= 0) {
+            return crow::response(400, "Please provide a valid doctor_id.");
+        }
+
+        auto body = crow::json::load(req.body);
+        if (!body ||
+            !body.has("doctor_name") ||
+            !body.has("phone") ||
+            !body.has("experience_years") ||
+            !body.has("qualifications") ||
+            !body.has("ratings") ||
+            !body.has("category_id")) {
+            return crow::response(400, "Please fill in all required fields.");
+        }
+
+        string name = body["doctor_name"].s();
+        string phone = body["phone"].s();
+        string experience = body["experience_years"].s();
+        string degree = body["qualifications"].s();
+        double rating = body["ratings"].d();
+        int category_id = body["category_id"].i();
+
+        sqlite3_stmt* stmt = nullptr;
+        const char* sql =
+            "UPDATE Doctor SET doctor_name = ?, phone = ?, experience_years = ?, qualification = ?, ratings = ?, category_id = ? "
+            "WHERE doctor_id = ?;";
+
+        if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+            std::cerr << "Prepare failed: " << sqlite3_errmsg(db) << std::endl;
+            return crow::response(500, "Sorry, we couldn't update the doctor right now. Please try again.");
+        }
+
+        sqlite3_bind_text(stmt, 1, name.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, 2, phone.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, 3, experience.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, 4, degree.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_double(stmt, 5, rating);
+        sqlite3_bind_int(stmt, 6, category_id);
+        sqlite3_bind_int(stmt, 7, doctor_id);
+
+        const int rc = sqlite3_step(stmt);
+        const int changes = sqlite3_changes(db);
+        sqlite3_finalize(stmt);
+
+        const bool success = (rc == SQLITE_DONE && changes > 0);
+
+        crow::json::wvalue response;
+        response["success"] = success;
+        response["message"] = success
+            ? "Doctor updated successfully."
+            : "Sorry, that doctor was not found or could not be updated.";
 
         return crow::response(200, response);
     });

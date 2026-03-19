@@ -7,6 +7,7 @@
 #include <mutex>
 #include <chrono>
 #include <random>
+#include <cstdlib>
 #include "../models/category.h"
 #include "../services/public_session.h"
 #include "category_controller.h"
@@ -30,6 +31,11 @@ std::string generateCategoryToken() {
     std::ostringstream out;
     out << std::hex << dis(gen) << dis(gen);
     return out.str();
+}
+
+bool shouldUseSecureCookie() {
+    const char* disable_ssl = std::getenv("DISABLE_SSL");
+    return !(disable_ssl && std::string(disable_ssl) == "1");
 }
 
 void pruneCategoryContexts() {
@@ -145,7 +151,10 @@ void registerCategoryRoutes(crow::SimpleApp& app, sqlite3* db) {
         crow::response response(200, res);
         std::ostringstream cookie;
         cookie << "category_token=" << token
-               << "; Path=/; Max-Age=900; HttpOnly; SameSite=Strict; Secure";
+               << "; Path=/; Max-Age=900; HttpOnly; SameSite=Strict";
+        if (shouldUseSecureCookie()) {
+            cookie << "; Secure";
+        }
         response.add_header("Set-Cookie", cookie.str());
         return response;
     });
@@ -231,6 +240,52 @@ void registerCategoryRoutes(crow::SimpleApp& app, sqlite3* db) {
     response["success"] = inserted;
     response["message"] =
         inserted ? "Category added successfully." : "Sorry, we could not add that category right now.";
+
+    return crow::response(200, response);
+});
+
+    // PUT update category
+    CROW_ROUTE(app, "/update_category/<int>").methods("PUT"_method)
+([db](const crow::request& req, int category_id) {
+    if (!publicSessionValid(req)) {
+        return crow::response(401, "Please refresh and try again.");
+    }
+
+    if (category_id <= 0) {
+        return crow::response(400, "Please provide a valid category_id.");
+    }
+
+    auto body = crow::json::load(req.body);
+    if (!body || !body.has("category_name") || !body.has("description")) {
+        return crow::response(400, "Please provide a category name and description.");
+    }
+
+    std::string name = body["category_name"].s();
+    std::string description = body["description"].s();
+
+    sqlite3_stmt* stmt = nullptr;
+    const char* sql = "UPDATE Category SET category_name = ?, description = ? WHERE category_id = ?;";
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+        std::cerr << "Prepare failed: " << sqlite3_errmsg(db) << std::endl;
+        return crow::response(500, "Sorry, we couldn't update the category right now. Please try again.");
+    }
+
+    sqlite3_bind_text(stmt, 1, name.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 2, description.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_int(stmt, 3, category_id);
+
+    const int rc = sqlite3_step(stmt);
+    const int changes = sqlite3_changes(db);
+    sqlite3_finalize(stmt);
+
+    const bool success = (rc == SQLITE_DONE && changes > 0);
+
+    crow::json::wvalue response;
+    response["success"] = success;
+    response["message"] = success
+        ? "Category updated successfully."
+        : "Sorry, that category was not found or could not be updated.";
 
     return crow::response(200, response);
 });

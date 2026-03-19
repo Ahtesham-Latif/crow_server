@@ -5,6 +5,7 @@
 #include <chrono>
 #include <random>
 #include <sstream>
+#include <cstdlib>
 
 namespace {
 
@@ -77,9 +78,15 @@ void issuePublicSession(crow::response& res) {
         g_public_sessions[token] = {expires_at};
     }
 
+    const char* disable_ssl = std::getenv("DISABLE_SSL");
+    const bool use_ssl = !(disable_ssl && std::string(disable_ssl) == "1");
+
     std::ostringstream cookie;
     cookie << "public_token=" << token
-           << "; Path=/; Max-Age=1800; HttpOnly; SameSite=Lax; Secure";
+           << "; Path=/; Max-Age=1800; HttpOnly; SameSite=Lax";
+    if (use_ssl) {
+        cookie << "; Secure";
+    }
     res.add_header("Set-Cookie", cookie.str());
 }
 

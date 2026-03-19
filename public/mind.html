@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -6,98 +6,247 @@
   <title>Admin - Category & Doctor Management</title>
   <link rel="stylesheet" href="/assets/mind.css">
 </head>
-<body>
-  <header class="app-header">
-    <div class="brand">
-      <div class="brand-mark">A</div>
-      <div class="brand-text">
-        <h1>Admin Panel</h1>
-        <p>Manage categories, assign doctors, and keep the directory organized.</p>
+<body id="top">
+  <header class="header">
+    <div class="logo-container">
+      <div class="logo">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10 2H14V10H22V14H14V22H10V14H2V10H10V2Z" fill="currentColor"/>
+        </svg>
       </div>
+      <div class="logo-text">
+        <h1>Admin Board</h1>
+        <p>Manage categories and doctors with clear separation.</p>
+      </div>
+    </div>
+    <div class="status">
+      <span class="status-dot"></span>
+      Secure Admin Access
     </div>
   </header>
 
-  <main class="layout">
-    <section class="panel">
-      <div class="panel-header">
-        <div>
-          <h2>Categories</h2>
-          <p>Select a category to add doctors by category and manage details.</p>
+  <div class="container">
+    <div class="title-section">
+      <h1>Admin Operations</h1>
+      <p>Create, read, update, or delete — each flow in its own card.</p>
+    </div>
+
+    <nav class="admin-nav" aria-label="Admin navigation">
+      <a class="nav-link nav-primary" href="#createSection">Create</a>
+      <a class="nav-link nav-teal" href="#readSection">Read</a>
+      <a class="nav-link nav-purple" href="#updateSection">Update</a>
+      <a class="nav-link nav-rose" href="#deleteSection">Delete</a>
+    </nav>
+
+    <main class="crud-grid">
+      <details class="crud-card" id="createSection">
+        <summary class="crud-summary">
+          <div class="summary-left">
+            <span class="summary-icon">✨</span>
+            <div>
+              <h2>Create</h2>
+              <p>Add new categories and doctors.</p>
+            </div>
+          </div>
+          <span class="summary-chip">Open</span>
+        </summary>
+        <div class="crud-content">
+          <div class="sub-grid">
+            <section class="sub-card">
+              <h3>Category Creation 🧩</h3>
+              <form id="addCategoryForm" class="form-card">
+                <label for="category_name">Category Name</label>
+                <input type="text" id="category_name" name="category_name" required placeholder="e.g. Pediatrician">
+
+                <label for="description">Description</label>
+                <textarea id="description" name="description" required placeholder="Enter description"></textarea>
+
+                <div class="button-row">
+                  <button type="submit" class="btn btn-primary">Add Category</button>
+                </div>
+              </form>
+            </section>
+
+            <section class="sub-card">
+              <h3>Doctor Creation 🩺</h3>
+              <form id="addDoctorForm" class="form-card">
+                <label for="doctor_name">Doctor Name</label>
+                <input type="text" id="doctor_name" name="doctor_name" required placeholder="e.g. Dr. Ahmed">
+
+                <label for="phone">Phone</label>
+                <input type="text" id="phone" name="phone" required placeholder="e.g. 03001234567">
+
+                <label for="experience_years">Experience (Years)</label>
+                <input type="number" id="experience_years" name="experience_years" min="0" required placeholder="e.g. 8">
+
+                <label for="qualifications">Qualifications</label>
+                <input type="text" id="qualifications" name="qualifications" required placeholder="e.g. MBBS, FCPS">
+
+                <label for="ratings">Rating ⭐</label>
+                <input type="number" id="ratings" name="ratings" min="0" max="5" step="0.1" required placeholder="e.g. 4.5">
+
+                <label for="doctor_category_id">Category</label>
+                <select id="doctor_category_id" name="doctor_category_id" required>
+                  <option value="">Select a category</option>
+                </select>
+
+                <div class="button-row">
+                  <button type="submit" class="btn btn-primary">Add Doctor</button>
+                </div>
+              </form>
+            </section>
+          </div>
         </div>
-        <span class="chip" id="selectedCategoryChip">All categories</span>
-      </div>
+      </details>
 
-      <div id="categoryList" class="category-list">
-        <div class="empty-state">Loading categories...</div>
-      </div>
+      <details class="crud-card" id="readSection">
+        <summary class="crud-summary">
+          <div class="summary-left">
+            <span class="summary-icon">📖</span>
+            <div>
+              <h2>Read</h2>
+              <p>Browse categories and doctors.</p>
+            </div>
+          </div>
+          <span class="summary-chip">Open</span>
+        </summary>
+        <div class="crud-content">
+          <div class="sub-grid">
+            <section class="sub-card">
+              <div class="sub-header">
+                <h3>Category List</h3>
+                <span class="chip" id="selectedCategoryChip">All categories</span>
+              </div>
+              <div id="categoryBox" class="info-card">
+                <h4>Category Box</h4>
+                <p>Select a category to see its details.</p>
+              </div>
+              <div id="categoryReadList" class="category-list">
+                <div class="empty-state">Loading categories...</div>
+              </div>
+            </section>
 
-      <form id="addCategoryForm" class="form-card">
-        <h3>Add Category</h3>
-        <label for="category_name">Category Name</label>
-        <input type="text" id="category_name" name="category_name" required placeholder="e.g. Pediatrician">
-
-        <label for="description">Description</label>
-        <textarea id="description" name="description" required placeholder="Enter description"></textarea>
-
-        <div class="button-row">
-          <button type="submit" class="btn btn-primary">Add Category</button>
+            <section class="sub-card">
+              <div class="list-header">
+                <h3>Doctor List</h3>
+                <select id="doctorFilterRead">
+                  <option value="">All categories</option>
+                </select>
+              </div>
+              <div id="doctorReadList" class="doctor-list">
+                <div class="empty-state">Loading doctors...</div>
+              </div>
+            </section>
+          </div>
         </div>
-      </form>
-    </section>
+      </details>
 
-    <section class="panel">
-      <div class="panel-header">
-        <div>
-          <h2>Doctors</h2>
-          <p>Add doctors in the selected category and review the full list.</p>
+      <details class="crud-card" id="updateSection">
+        <summary class="crud-summary">
+          <div class="summary-left">
+            <span class="summary-icon">🛠️</span>
+            <div>
+              <h2>Update</h2>
+              <p>Edit existing categories and doctors.</p>
+            </div>
+          </div>
+          <span class="summary-chip">Open</span>
+        </summary>
+        <div class="crud-content">
+          <div class="sub-grid">
+            <section class="sub-card">
+              <h3>Edit Category ✏️</h3>
+              <form id="editCategoryForm" class="form-card">
+                <label for="edit_category_id">Select Category</label>
+                <select id="edit_category_id" name="edit_category_id" required>
+                  <option value="">Select a category</option>
+                </select>
+
+                <label for="edit_category_name">Category Name</label>
+                <input type="text" id="edit_category_name" name="edit_category_name" required placeholder="Category name">
+
+                <label for="edit_category_description">Description</label>
+                <textarea id="edit_category_description" name="edit_category_description" required placeholder="Category description"></textarea>
+
+                <div class="button-row">
+                  <button type="submit" class="btn btn-primary">Update Category</button>
+                </div>
+              </form>
+            </section>
+
+            <section class="sub-card">
+              <h3>Edit Doctor ✏️</h3>
+              <form id="editDoctorForm" class="form-card">
+                <label for="edit_doctor_id">Select Doctor</label>
+                <select id="edit_doctor_id" name="edit_doctor_id" required>
+                  <option value="">Select a doctor</option>
+                </select>
+
+                <label for="edit_doctor_name">Doctor Name</label>
+                <input type="text" id="edit_doctor_name" name="edit_doctor_name" required placeholder="Doctor name">
+
+                <label for="edit_doctor_phone">Phone</label>
+                <input type="text" id="edit_doctor_phone" name="edit_doctor_phone" required placeholder="Phone number">
+
+                <label for="edit_experience_years">Experience (Years)</label>
+                <input type="number" id="edit_experience_years" name="edit_experience_years" min="0" required placeholder="Experience">
+
+                <label for="edit_qualifications">Qualifications</label>
+                <input type="text" id="edit_qualifications" name="edit_qualifications" required placeholder="Qualifications">
+
+                <label for="edit_ratings">Rating ⭐</label>
+                <input type="number" id="edit_ratings" name="edit_ratings" min="0" max="5" step="0.1" required placeholder="Rating">
+
+                <label for="edit_doctor_category_id">Category</label>
+                <select id="edit_doctor_category_id" name="edit_doctor_category_id" required>
+                  <option value="">Select a category</option>
+                </select>
+
+                <div class="button-row">
+                  <button type="submit" class="btn btn-primary">Update Doctor</button>
+                </div>
+              </form>
+            </section>
+          </div>
         </div>
-      </div>
+      </details>
 
-      <div id="categoryBox" class="info-card">
-        <h4>Category Box</h4>
-        <p>Select a category to see its details.</p>
-      </div>
+      <details class="crud-card" id="deleteSection">
+        <summary class="crud-summary">
+          <div class="summary-left">
+            <span class="summary-icon">🗑️</span>
+            <div>
+              <h2>Delete</h2>
+              <p>Remove categories and doctors.</p>
+            </div>
+          </div>
+          <span class="summary-chip">Open</span>
+        </summary>
+        <div class="crud-content">
+          <div class="sub-grid">
+            <section class="sub-card">
+              <h3>Delete Category</h3>
+              <div id="categoryDeleteList" class="category-list">
+                <div class="empty-state">Loading categories...</div>
+              </div>
+            </section>
 
-      <form id="addDoctorForm" class="form-card">
-        <h3>Add Doctor By Category</h3>
-        <label for="doctor_name">Doctor Name</label>
-        <input type="text" id="doctor_name" name="doctor_name" required placeholder="e.g. Dr. Ahmed">
-
-        <label for="phone">Phone</label>
-        <input type="text" id="phone" name="phone" required placeholder="e.g. 03001234567">
-
-        <label for="experience_years">Experience (Years)</label>
-        <input type="number" id="experience_years" name="experience_years" min="0" required placeholder="e.g. 8">
-
-        <label for="qualifications">Qualifications</label>
-        <input type="text" id="qualifications" name="qualifications" required placeholder="e.g. MBBS, FCPS">
-
-        <label for="ratings">Rating</label>
-        <input type="number" id="ratings" name="ratings" min="0" max="5" step="0.1" required placeholder="e.g. 4.5">
-
-        <label for="doctor_category_id">Category</label>
-        <select id="doctor_category_id" name="doctor_category_id" required>
-          <option value="">Select a category</option>
-        </select>
-
-        <div class="button-row">
-          <button type="submit" class="btn btn-primary">Add Doctor</button>
+            <section class="sub-card">
+              <div class="list-header">
+                <h3>Delete Doctor</h3>
+                <select id="doctorFilterDelete">
+                  <option value="">All categories</option>
+                </select>
+              </div>
+              <div id="doctorDeleteList" class="doctor-list">
+                <div class="empty-state">Loading doctors...</div>
+              </div>
+            </section>
+          </div>
         </div>
-      </form>
-
-      <div class="form-card">
-        <div class="list-header">
-          <h3>Doctors By Category</h3>
-          <select id="doctorFilter">
-            <option value="">All categories</option>
-          </select>
-        </div>
-        <div id="doctorList" class="doctor-list">
-          <div class="empty-state">Loading doctors...</div>
-        </div>
-      </div>
-    </section>
-  </main>
+      </details>
+    </main>
+  </div>
 
   <div id="toast" class="toast" role="status"></div>
   <script type="module" src="/assets/mind.js"></script>
