@@ -81,17 +81,13 @@ Elimination of empty white screens - Improved perceived performance
 
 # 🛠️ Technical Stack
 
-  Component           Technology
-  ------------------- ----------------------------------------
-  Backend Framework   Crow (C++17)
-  Database            SQLite3
-  Security            OpenSSL (TLS/SSL)
-  Templates           Mustache HTML
-  Automation          n8n Webhooks
-  Build System        CMake
-  Platform            Cross-platform (Windows, Linux, macOS)
-
-------------------------------------------------------------------------
+- **Backend Framework:** Crow (C++17)  
+- **Database:** SQLite3  
+- **Security:** OpenSSL (TLS/SSL)  
+- **Templates:** Mustache HTML  
+- **Automation:** n8n Webhooks  
+- **Build System:** CMake  
+- **Platform:** Cross-platform (Windows, Linux, macOS)
 
 # 🧱 System Architecture
 
