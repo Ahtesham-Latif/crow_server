@@ -58,6 +58,7 @@ void registerPageRoutes(crow::SimpleApp& app)
     CROW_ROUTE(app, "/confirmation_page")([]() { return serveFile("../public/confirmation.html"); });
     CROW_ROUTE(app, "/cancel_appointment_page")([]() { return serveFile("../public/cancellation.html"); });
     CROW_ROUTE(app, "/doctor_dashboard_page")([]() { return serveFile("../public/doctor_dashboard.html"); });
+    CROW_ROUTE(app, "/admin_page")([]() { return serveFile("../public/admin.html"); });
     CROW_ROUTE(app, "/controller(mind)")([](const crow::request& req) {
         auto res = serveFile("../public/mind.html");
         res.set_header("Content-Type", "text/html; charset=utf-8");

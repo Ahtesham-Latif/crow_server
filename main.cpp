@@ -11,6 +11,7 @@ using namespace std;
 #include "controllers/appointment_controller.h"
 #include "controllers/cancellation_controller.h"
 #include "controllers/page_controller.h"
+#include "controllers/admin_controller.h"
 
 int main() {
     crow::SimpleApp app;
@@ -48,12 +49,13 @@ int main() {
     registerScheduleRoutes(app, db);
     registerAppointmentRoutes(app, db);
     registerCancellationRoutes(app, db);
+    registerAdminRoutes(app, db);
 
     // -------------------------------------------------
     // Start the server
     // -------------------------------------------------
     const char* disable_ssl = std::getenv("DISABLE_SSL");
-    const bool use_ssl = !(disable_ssl && std::string(disable_ssl) == "1");
+    const bool use_ssl = !(disable_ssl && std::string(disable_ssl) == "0");
 
     if (use_ssl) {
         cout << "Server running at https://localhost:8443\n";

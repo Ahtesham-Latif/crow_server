@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin Dashboard - Block Slots</title>
+<style>
+:root {
+    --bg: #f4f6fb;
+    --card: #ffffff;
+    --text: #18243a;
+    --muted: #60708f;
+    --border: #dde4f0;
+    --brand: #0f766e;
+    --brand-soft: #ecfdf5;
+    --danger: #b42318;
+    --danger-soft: #fef3f2;
+    --warning: #d97706;
+    --warning-soft: #fffbeb;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(180deg, #eef3ff 0%, var(--bg) 100%);
+    color: var(--text);
+}
+
+.wrapper {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 28px 18px 40px;
+}
+
+.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 10px 22px rgba(19, 38, 69, 0.06);
+    margin-bottom: 20px;
+}
+
+h1 {
+    margin: 0 0 8px;
+    font-size: 28px;
+}
+
+.sub {
+    margin: 0 0 22px;
+    color: var(--muted);
+}
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+label {
+    display: block;
+    font-size: 13px;
+    margin-bottom: 6px;
+    color: var(--muted);
+    font-weight: 500;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    font-size: 14px;
+    font-family: inherit;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+button {
+    border: 0;
+    border-radius: 10px;
+    padding: 10px 16px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.btn-primary {
+    background: var(--brand);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #055c4f;
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #8a1b12;
+}
+
+.btn-secondary {
+    background: #e8edf7;
+    color: #1d2b44;
+}
+
+.btn-secondary:hover {
+    background: #d6dce7;
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.status {
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    display: none;
+    font-size: 14px;
+}
+
+.ok { 
+    background: var(--brand-soft); 
+    color: #065f46; 
+    border: 1px solid #a7f3d0; 
+}
+
+.err { 
+    background: var(--danger-soft); 
+    color: var(--danger); 
+    border: 1px solid #fecdca; 
+}
+
+.warning {
+    background: var(--warning-soft);
+    color: var(--warning);
+    border: 1px solid #fed7aa;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 14px;
+    padding: 24px;
+    max-width: 400px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+    text-align: center;
+}
+
+.modal-content h2 {
+    margin: 0 0 12px;
+    font-size: 20px;
+    color: var(--text);
+}
+
+.modal-content p {
+    margin: 0 0 20px;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.modal-content .highlight {
+    font-weight: 600;
+    color: var(--brand);
+    display: block;
+    margin: 12px 0;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.modal-buttons button {
+    flex: 1;
+}
+
+.table-card {
+    margin-top: 30px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+table th {
+    background: var(--brand-soft);
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--brand);
+    border-bottom: 1px solid var(--border);
+}
+
+table td {
+    padding: 12px;
+    border-bottom: 1px solid var(--border);
+}
+
+table tr:hover {
+    background: #f9fafb;
+}
+
+.empty-message {
+    text-align: center;
+    padding: 20px;
+    color: var(--muted);
+}
+
+.loading {
+    display: inline-block;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+</style>
+</head>
+<body>
+<div class="wrapper">
+    <div class="card">
+        <h1>🔐 Admin Dashboard</h1>
+        <p class="sub">Block or unblock all time slots for all doctors on specific dates (for holidays, vacations, etc.)</p>
+
+        <div class="form-group">
+            <label for="blockDate">Date to Block All Slots *</label>
+            <input id="blockDate" type="date" required />
+        </div>
+
+        <div class="form-group">
+            <label for="blockReason">Reason *</label>
+            <textarea id="blockReason" placeholder="e.g., Eid Vacation, National Holiday, System Maintenance" required></textarea>
+        </div>
+
+        <div id="status" class="status"></div>
+
+        <div class="button-group">
+            <button id="blockAllBtn" class="btn-primary" type="button">Block All Slots</button>
+            <button id="loadHistoryBtn" class="btn-secondary" type="button">Refresh History</button>
+        </div>
+    </div>
+
+    <div class="card table-card">
+        <h2 style="margin-top: 0;">Blocked Dates History</h2>
+        <div id="historyContainer">
+            <p class="empty-message">Loading...</p>
+        </div>
+    </div>
+</div>
+
+<!-- First Confirmation Modal -->
+<div id="confirmModal1" class="modal">
+    <div class="modal-content">
+        <h2>⚠️ Confirm Block Request</h2>
+        <p>You are about to block all time slots for all doctors on:</p>
+        <span id="confirmDate1" class="highlight"></span>
+        <p id="confirmReason1" style="font-size: 13px; color: var(--muted); margin-bottom: 20px;"></p>
+        <p style="font-size: 12px; margin: 12px 0;">This is your first confirmation. Click again to proceed.</p>
+        <div class="modal-buttons">
+            <button id="confirm1Yes" class="btn-primary" type="button">Yes, Confirm</button>
+            <button id="confirm1No" class="btn-secondary" type="button">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Second Confirmation Modal -->
+<div id="confirmModal2" class="modal">
+    <div class="modal-content">
+        <h2>🔒 Final Confirmation Required</h2>
+        <p><strong>Are you absolutely sure?</strong></p>
+        <p>This will block all time slots for <strong>all doctors</strong> on:</p>
+        <span id="confirmDate2" class="highlight"></span>
+        <p id="confirmReason2" style="font-size: 13px; color: var(--muted); margin-bottom: 20px;"></p>
+        <p style="font-size: 12px; color: var(--danger); margin: 12px 0;"><strong>This action cannot be easily undone!</strong></p>
+        <div class="modal-buttons">
+            <button id="confirm2Yes" class="btn-danger" type="button">Yes, Block All Slots</button>
+            <button id="confirm2No" class="btn-secondary" type="button">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const blockDate = document.getElementById("blockDate");
+const blockReason = document.getElementById("blockReason");
+const blockAllBtn = document.getElementById("blockAllBtn");
+const loadHistoryBtn = document.getElementById("loadHistoryBtn");
+const statusBox = document.getElementById("status");
+
+const confirmModal1 = document.getElementById("confirmModal1");
+const confirmModal2 = document.getElementById("confirmModal2");
+
+let pendingBlockDate = "";
+let pendingBlockReason = "";
+
+function showStatus(message, type) {
+    statusBox.style.display = "block";
+    statusBox.className = "status " + type;
+    statusBox.textContent = message;
+}
+
+function hideStatus() {
+    statusBox.style.display = "none";
+}
+
+async function loadHistory() {
+    const container = document.getElementById("historyContainer");
+    
+    try {
+        const res = await fetch("/get_blocked_dates");
+        if (!res.ok) {
+            container.innerHTML = '<p class="empty-message">Unable to load history.</p>';
+            return;
+        }
+
+        const data = await res.json();
+        const blocked = data.blocked_dates || [];
+
+        if (blocked.length === 0) {
+            container.innerHTML = '<p class="empty-message">No blocked dates recorded yet.</p>';
+            return;
+        }
+
+        let html = `
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Reason</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        blocked.forEach(record => {
+            const date = new Date(record.blocked_date).toLocaleDateString("en-US", { 
+                year: "numeric", 
+                month: "short", 
+                day: "2-digit" 
+            });
+            html += `
+                <tr>
+                    <td>${date}</td>
+                    <td>${record.reason || "—"}</td>
+                    <td>
+                        <button class="btn-secondary" onclick="unblockDate('${record.blocked_date}')" style="padding: 6px 12px; font-size: 12px;">
+                            Unblock
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        html += `
+                </tbody>
+            </table>
+        `;
+
+        container.innerHTML = html;
+    } catch (err) {
+        console.error(err);
+        container.innerHTML = '<p class="empty-message">Error loading history.</p>';
+    }
+}
+
+async function unblockDate(date) {
+    if (!confirm(`Unblock all slots for ${date}?`)) return;
+
+    try {
+        const res = await fetch("/admin/unblock_all_slots", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ blocked_date: date })
+        });
+
+        if (res.ok) {
+            showStatus("Date unblocked successfully!", "ok");
+            await loadHistory();
+        } else {
+            const data = await res.json();
+            showStatus(data.message || "Failed to unblock date.", "err");
+        }
+    } catch (err) {
+        showStatus("Error: " + err.message, "err");
+    }
+}
+
+function openConfirm1() {
+    if (!blockDate.value || !blockReason.value) {
+        showStatus("Please fill in both date and reason.", "err");
+        return;
+    }
+
+    pendingBlockDate = blockDate.value;
+    pendingBlockReason = blockReason.value;
+
+    document.getElementById("confirmDate1").textContent = pendingBlockDate;
+    document.getElementById("confirmReason1").textContent = `Reason: ${pendingBlockReason}`;
+    confirmModal1.classList.add("active");
+    hideStatus();
+}
+
+function closeConfirm1() {
+    confirmModal1.classList.remove("active");
+}
+
+function closeConfirm2() {
+    confirmModal2.classList.remove("active");
+}
+
+function openConfirm2() {
+    closeConfirm1();
+    document.getElementById("confirmDate2").textContent = pendingBlockDate;
+    document.getElementById("confirmReason2").textContent = `Reason: ${pendingBlockReason}`;
+    confirmModal2.classList.add("active");
+}
+
+async function executeBlockAll() {
+    closeConfirm2();
+
+    try {
+        statusBox.innerHTML = '<span class="loading">⏳</span> Processing...';
+        statusBox.style.display = "block";
+        statusBox.className = "status warning";
+
+        const res = await fetch("/admin/block_all_slots", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                blocked_date: pendingBlockDate,
+                reason: pendingBlockReason
+            })
+        });
+
+        if (res.ok) {
+            const data = await res.json();
+            showStatus(`✅ All slots blocked! (${data.slots_blocked} slots blocked)`, "ok");
+            blockDate.value = "";
+            blockReason.value = "";
+            pendingBlockDate = "";
+            pendingBlockReason = "";
+            await loadHistory();
+        } else {
+            const data = await res.json();
+            showStatus(data.message || "Failed to block slots.", "err");
+        }
+    } catch (err) {
+        showStatus("Error: " + err.message, "err");
+    }
+}
+
+// Event Listeners
+blockAllBtn.addEventListener("click", openConfirm1);
+loadHistoryBtn.addEventListener("click", loadHistory);
+
+document.getElementById("confirm1Yes").addEventListener("click", openConfirm2);
+document.getElementById("confirm1No").addEventListener("click", closeConfirm1);
+
+document.getElementById("confirm2Yes").addEventListener("click", executeBlockAll);
+document.getElementById("confirm2No").addEventListener("click", closeConfirm2);
+
+// Load history on page load
+window.addEventListener("load", loadHistory);
+</script>
+</body>
+</html>

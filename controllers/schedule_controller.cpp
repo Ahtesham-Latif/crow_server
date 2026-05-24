@@ -758,4 +758,67 @@ void registerScheduleRoutes(crow::SimpleApp& app, sqlite3* db)
         res["message"] = (ok && changes > 0) ? "Slot unblocked." : "No blocked slot was found.";
         return crow::response((ok && changes > 0) ? 200 : 404, res);
     });
+
+    // --------------------------------------------------
+    // GET: Doctor dashboard history - fetch earlier slots
+    // (booked or cancelled) for past 2 months
+    // --------------------------------------------------
+    CROW_ROUTE(app, "/doctor_dashboard/history").methods("GET"_method)
+    ([db](const crow::request& req)
+    {
+        const std::string token = getTokenFromRequest(req);
+        const int doctor_id = doctorIdFromToken(token);
+
+        if (doctor_id <= 0) {
+            return crow::response(401, "Please verify your session and try again.");
+        }
+
+        const char* sql =
+            "SELECT a.appointment_id, a.patient_id, a.schedule_id, a.appointment_date, "
+            "       a.status, a.created_at, ds.time_slot, p.name, p.email "
+            "FROM Appointment a "
+            "INNER JOIN Doctor_Schedule ds ON a.schedule_id = ds.schedule_id "
+            "INNER JOIN Patient p ON a.patient_id = p.patient_id "
+            "WHERE a.doctor_id = ? "
+            "  AND a.appointment_date >= date('now', 'localtime', '-60 days') "
+            "  AND a.appointment_date < date('now', 'localtime') "
+            "  AND a.status IN ('BOOKED', 'CANCELLED') "
+            "ORDER BY a.appointment_date DESC, ds.time_slot DESC;";
+
+        sqlite3_stmt* stmt = nullptr;
+        if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+            std::cerr << "[ERROR] Prepare failed: " << sqlite3_errmsg(db) << std::endl;
+            return crow::response(500, "Sorry, we couldn't load the history right now. Please try again.");
+        }
+
+        sqlite3_bind_int(stmt, 1, doctor_id);
+
+        crow::json::wvalue result;
+        int idx = 0;
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            result[idx]["appointment_id"] = sqlite3_column_int(stmt, 0);
+            result[idx]["patient_id"] = sqlite3_column_int(stmt, 1);
+            result[idx]["schedule_id"] = sqlite3_column_int(stmt, 2);
+            result[idx]["appointment_date"] =
+                std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
+            result[idx]["status"] =
+                std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4)));
+            result[idx]["created_at"] =
+                std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5)));
+            result[idx]["time_slot"] =
+                std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 6)));
+            result[idx]["patient_name"] =
+                std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 7)));
+            result[idx]["patient_phone"] =
+                std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 8)));
+            idx++;
+        }
+        sqlite3_finalize(stmt);
+
+        crow::json::wvalue res;
+        res["success"] = true;
+        res["count"] = idx;
+        res["appointments"] = std::move(result);
+        return crow::response(200, res);
+    });
 }

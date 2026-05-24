@@ -179,6 +179,70 @@ button {
     font-size: 13px;
     color: var(--muted);
 }
+.tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+    margin-top: 20px;
+}
+.tab-btn {
+    padding: 12px 16px;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-weight: 500;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -1px;
+}
+.tab-btn.active {
+    color: var(--brand);
+    border-bottom-color: var(--brand);
+}
+.table-container {
+    overflow-x: auto;
+    margin-top: 20px;
+    display: none;
+}
+.table-container.active {
+    display: block;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+table th {
+    background: var(--brand-soft);
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--brand);
+    border-bottom: 1px solid var(--border);
+}
+table td {
+    padding: 12px;
+    border-bottom: 1px solid var(--border);
+}
+table tr:hover {
+    background: #f9fafb;
+}
+.status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+}
+.status-booked {
+    background: #fee4e2;
+    color: #8e1f16;
+}
+.status-cancelled {
+    background: #ede9fe;
+    color: #6d28d9;
+}
 </style>
 </head>
 <body>
@@ -222,11 +286,34 @@ button {
             </div>
             <div>
                 <button id="loadSlots" class="btn-secondary" type="button">Refresh Slots</button>
+                <button id="viewHistory" class="btn-secondary" type="button" style="margin-top:8px;">View History</button>
                 <button id="logout" class="btn-secondary" type="button" style="margin-top:8px;">Logout</button>
             </div>
         </div>
 
+        <div id="tabs" class="tabs hidden">
+            <button id="slotsTab" class="tab-btn active" type="button">Current Slots</button>
+            <button id="historyTab" class="tab-btn" type="button">Past Appointments</button>
+        </div>
+
         <div id="slots" class="grid hidden"></div>
+
+        <div id="historyContainer" class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Patient Name</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>Booked On</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTable">
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -240,6 +327,11 @@ const slotsBox = document.getElementById("slots");
 const calendarDays = document.getElementById("calendarDays");
 const calendarMonth = document.getElementById("calendarMonth");
 const selectedDateDisplay = document.getElementById("selectedDateDisplay");
+const tabs = document.getElementById("tabs");
+const slotsTab = document.getElementById("slotsTab");
+const historyTab = document.getElementById("historyTab");
+const historyContainer = document.getElementById("historyContainer");
+const historyTable = document.getElementById("historyTable");
 let currentDate = new Date();
 let selectedDateISO = "";
 
@@ -255,6 +347,20 @@ async function readPoliteError(res, fallback) {
         return data.message || fallback;
     } catch (err) {
         return fallback;
+    }
+}
+
+function showTab(tabName) {
+    if (tabName === "slots") {
+        slotsBox.classList.remove("hidden");
+        historyContainer.classList.remove("active");
+        slotsTab.classList.add("active");
+        historyTab.classList.remove("active");
+    } else if (tabName === "history") {
+        slotsBox.classList.add("hidden");
+        historyContainer.classList.add("active");
+        slotsTab.classList.remove("active");
+        historyTab.classList.add("active");
     }
 }
 
@@ -347,6 +453,47 @@ async function loadSlots() {
 
     const data = await res.json();
     renderSlots(data, selectedDateISO);
+}
+
+async function loadHistory() {
+    if (!token) return;
+
+    const res = await fetch(`/doctor_dashboard/history?token=${encodeURIComponent(token)}`);
+    if (!res.ok) {
+        showStatus(await readPoliteError(res, "Sorry, we could not load history right now. Please try again."), false);
+        return;
+    }
+
+    const data = await res.json();
+    renderHistory(data.appointments || []);
+    tabs.classList.remove("hidden");
+    showTab("history");
+}
+
+function renderHistory(appointments) {
+    historyTable.innerHTML = "";
+
+    if (!Array.isArray(appointments) || appointments.length === 0) {
+        historyTable.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: var(--muted);">No past appointments found.</td></tr>';
+        return;
+    }
+
+    appointments.forEach(apt => {
+        const row = document.createElement("tr");
+        const statusBadgeClass = apt.status === "CANCELLED" ? "status-cancelled" : "status-booked";
+        const formattedDate = new Date(apt.appointment_date).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "2-digit" });
+        const formattedBookedOn = new Date(apt.created_at).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+
+        row.innerHTML = `
+            <td>${formattedDate}</td>
+            <td>${apt.time_slot}</td>
+            <td>${apt.patient_name}</td>
+            <td>${apt.patient_phone}</td>
+            <td><span class="status-badge ${statusBadgeClass}">${apt.status}</span></td>
+            <td>${formattedBookedOn}</td>
+        `;
+        historyTable.appendChild(row);
+    });
 }
 
 function renderCalendar() {
@@ -443,11 +590,27 @@ verifyForm.addEventListener("submit", async (e) => {
     await loadSlots();
 });
 
-document.getElementById("loadSlots").addEventListener("click", loadSlots);
+document.getElementById("loadSlots").addEventListener("click", () => {
+    tabs.classList.add("hidden");
+    showTab("slots");
+    loadSlots();
+});
+
+document.getElementById("viewHistory").addEventListener("click", loadHistory);
+
+slotsTab.addEventListener("click", () => {
+    showTab("slots");
+});
+
+historyTab.addEventListener("click", () => {
+    showTab("history");
+});
+
 document.getElementById("prevMonth").addEventListener("click", () => {
     currentDate.setMonth(currentDate.getMonth() - 1);
     renderCalendar();
 });
+
 document.getElementById("nextMonth").addEventListener("click", () => {
     currentDate.setMonth(currentDate.getMonth() + 1);
     renderCalendar();
@@ -456,8 +619,11 @@ document.getElementById("nextMonth").addEventListener("click", () => {
 document.getElementById("logout").addEventListener("click", () => {
     token = "";
     toolbar.style.display = "none";
+    tabs.classList.add("hidden");
     slotsBox.classList.add("hidden");
+    historyContainer.classList.remove("active");
     slotsBox.innerHTML = "";
+    historyTable.innerHTML = "";
     selectedDateISO = "";
     selectedDateDisplay.textContent = "Select a date";
     showStatus("Logged out.", true);
